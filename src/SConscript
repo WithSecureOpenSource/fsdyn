@@ -1,0 +1,68 @@
+Import('env')
+import os
+ 
+env.Command('avltree_version.c', [],
+            """echo 'const char *avltree_version_tag = \
+    "F-S_v:: avltree 1.0.%s";' >$TARGET""" % os.getenv("BUILD_NUMBER", "9999"))
+
+env['CCFLAGS'] += ' -fPIC'      # make objects usable for shared libs
+ 
+env['CPPPATH'] = [ '#include' ]
+ 
+env.ParseConfig(env['CONFIG_PARSER'])
+
+env.StaticLibrary('fsdyn',
+                  [ 'avltree.c',
+                    'avltree_version.c',
+                    'bytearray.c',
+                    'date.c',
+                    'hashtable.c',
+                    'integer.c',
+                    'intset.c',
+                    'list.c',
+                    'base64.c',
+                    'charstr.c',
+                    'charstr_unicode.c',
+                    'fsalloc.c',
+                    'unicode_categories.c',
+                    'unicode_lower_case.c',
+                    'unicode_upper_case.c',
+                    "unicode_canonical_combining_classes.c",
+                    "unicode_allowed_in_normal_form.c",
+                    "unicode_decomposition.c",
+                    "unicode_recomposition.c" ])
+
+env.Command("unicode_categories.c",
+            [ "categorize.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_lower_case.c",
+            [ "lower_case.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_upper_case.c",
+            [ "upper_case.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_canonical_combining_classes.c",
+            [ "canonical_combining_classes.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_allowed_in_normal_form.c",
+            [ "allowed_in_normal_form.py",
+              "#unicode/DerivedNormalizationProps.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_decomposition.c",
+            [ "decomposition.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Command("unicode_recomposition.c",
+            [ "recomposition.py",
+              "#unicode/UnicodeData.txt" ],
+            """$SOURCES >$TARGET""")

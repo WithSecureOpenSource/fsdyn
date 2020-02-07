@@ -1,0 +1,8 @@
+Name: fsdyn
+Description:
+Version: 1.0
+Requires:
+Requires.private:
+Cflags: -I@prefix@/include
+Libs: -L@prefix@/lib -lfsdyn
+Libs.private:

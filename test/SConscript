@@ -1,0 +1,27 @@
+Import('env')
+ 
+env['CCFLAGS'] += ' -O0'
+env['LIBPATH'] = [ '../components/avltree/lib' ]
+
+env.Program('avltest', [ 'avltest.c' ],
+            CPPPATH=[ '#include' ], LIBS=[ 'fsdyn', 'm' ])
+
+env.Program('bytearray_test', [ 'bytearray_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])
+
+env.Program('charstr_test', [ 'charstr_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])
+
+env.Program('intset_test', [ 'intset_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])
+
+env.Program('date_test', [ 'date_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])
+
+env.Program('base64_test', [ 'base64_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])

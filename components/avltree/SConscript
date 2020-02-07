@@ -1,0 +1,28 @@
+Import('env')
+
+import os
+
+include = env.Install(
+    'include/fsdyn',
+    [
+        '#include/fsalloc.h',
+        '#include/integer.h',
+        '#include/intset.h',
+        '#include/list.h',
+        '#include/avltree.h',
+        '#include/bytearray.h',
+        '#include/hashtable.h',
+        '#include/charstr.h',
+        '#include/date.h',
+        '#include/base64.h',
+    ],
+)
+lib = env.Install('lib', ['../../src/libfsdyn.a'])
+
+env.Alias(
+    'install',
+    env.Install(os.path.join(env['PREFIX'], 'include/fsdyn'), include),
+)
+env.Alias('install', env.Install(os.path.join(env['PREFIX'], 'lib'), lib))
+
+env['CONFIG_BUILDER'](env)
