@@ -52,4 +52,5 @@ int main()
     for (i = 0; i < 256; i++)
         intset_remove(s, i);
     assert(intset_empty(s));
+    destroy_intset(s);
 }
