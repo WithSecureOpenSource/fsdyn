@@ -167,6 +167,7 @@ static void remove_elements(avl_tree_t *t, int begin, int end)
     for (i = begin; i < end; i++) {
         avl_elem_t *node = avl_tree_pop(t, elements[i].key);
         assert(node != NULL);
+        destroy_avl_element(node);
     }
 }
 
