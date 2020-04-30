@@ -36,15 +36,28 @@ realpath () {
     fi
 }
 
+run-test () {
+    local arch=$1
+    shift
+    case $arch in
+        darwin)
+            "$@"
+            ;;
+        *)
+            valgrind -q --leak-check=full --error-exitcode=1 "$@"
+            ;;
+    esac
+}
+
 run-tests () {
     local arch=$1
-    stage/$arch/build/test/avltest &&
-    stage/$arch/build/test/bytearray_test &&
-    stage/$arch/build/test/intset_test &&
-    stage/$arch/build/test/charstr_test &&
-    stage/$arch/build/test/base64_test &&
-    stage/$arch/build/test/date_test &&
-    stage/$arch/build/test/priorq_test
+    run-test $arch stage/$arch/build/test/avltest &&
+    run-test $arch stage/$arch/build/test/bytearray_test &&
+    run-test $arch stage/$arch/build/test/intset_test &&
+    run-test $arch stage/$arch/build/test/charstr_test &&
+    run-test $arch stage/$arch/build/test/base64_test &&
+    run-test $arch stage/$arch/build/test/date_test &&
+    run-test $arch stage/$arch/build/test/priorq_test
 }
 
 main "$@"
