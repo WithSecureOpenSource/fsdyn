@@ -25,3 +25,7 @@ env.Program('date_test', [ 'date_test.c' ],
 env.Program('base64_test', [ 'base64_test.c' ],
             CPPPATH=[ '../components/avltree/include' ],
             LIBS=[ 'fsdyn' ])
+
+env.Program('priorq_test', [ 'priorq_test.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])

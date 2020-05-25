@@ -15,6 +15,7 @@ include = env.Install(
         '#include/charstr.h',
         '#include/date.h',
         '#include/base64.h',
+        '#include/priority_queue.h',
     ],
 )
 lib = env.Install('lib', ['../../src/libfsdyn.a'])
