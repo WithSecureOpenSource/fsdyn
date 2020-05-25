@@ -10,7 +10,6 @@ enum {
     K = 20,
     N = 1000000
 };
-static uint8_t keydata[N * K];
 
 typedef struct {
     uint8_t key[K];
@@ -22,7 +21,7 @@ static avl_tree_t *tree;
 static avl_tree_t *tree_ordered;
 static avl_tree_t *tree_reverse;
 
-static void read_data(void)
+static void prepare_data(void)
 {
     int i;
     for (i = 0; i < N; i++) {
@@ -225,8 +224,8 @@ static void enter_reverse_data(void)
 
 int main(void)
 {
-    printf("read_data\n");
-    read_data();
+    printf("prepare_data\n");
+    prepare_data();
     printf("enter_data\n");
     enter_data();
     enter_ordered_data();
