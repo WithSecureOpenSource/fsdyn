@@ -29,3 +29,7 @@ env.Program('base64_test', [ 'base64_test.c' ],
 env.Program('priorq_test', [ 'priorq_test.c' ],
             CPPPATH=[ '../components/avltree/include' ],
             LIBS=[ 'fsdyn' ])
+
+env.Program('priorq_perf', [ 'priorq_perf.c' ],
+            CPPPATH=[ '../components/avltree/include' ],
+            LIBS=[ 'fsdyn' ])

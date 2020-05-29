@@ -57,30 +57,47 @@ static priorq_t *enter_pr_data()
     return prq;
 }
 
-static bool test_correctness()
+uint64_t now_ns()
 {
-    fprintf(stderr, "enter_data\n");
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    return (uint64_t) t.tv_sec * 1000000000 + t.tv_usec * 1000;
+}
+
+static void test_performance()
+{
+    fprintf(stderr, "measure AVL tree\n");
+    uint64_t start = now_ns();
     avl_tree_t *tree = enter_avl_data();
     avl_elem_t *ae = avl_tree_get_first(tree);
-    priorq_t *prq = enter_pr_data();
-    while (!priorq_empty(prq)) {
-        element_t *e = (element_t *) priorq_dequeue(prq);
-        if (e != avl_elem_get_value(ae)) {
-            fprintf(stderr, "Mismatch!\n");
-            return false;
-        }
+    while (ae)
         ae = avl_tree_next(ae);
-    }
-    destroy_priority_queue(prq);
     destroy_avl_tree(tree);
-    return true;
+    uint64_t finish = now_ns();
+    fprintf(stderr, "  %g s\n", (finish - start) * 1e-9);
+    fprintf(stderr, "measure priority queue dequeue\n");
+    start = now_ns();
+    priorq_t *prq = enter_pr_data();
+    while (!priorq_empty(prq))
+        priorq_dequeue(prq);
+    destroy_priority_queue(prq);
+    finish = now_ns();
+    fprintf(stderr, "  %g s\n", (finish - start) * 1e-9);
+    fprintf(stderr, "measure priority queue remove\n");
+    start = now_ns();
+    prq = enter_pr_data();
+    int i;
+    for (i = 0; i < N; i++)
+        priorq_remove(prq, elements[i].loc);
+    destroy_priority_queue(prq);
+    finish = now_ns();
+    fprintf(stderr, "  %g s\n", (finish - start) * 1e-9);
 }
 
 int main()
 {
     fprintf(stderr, "prepare_data\n");
     prepare_data();
-    if (!test_correctness())
-        return EXIT_FAILURE;
+    test_performance();
     return EXIT_SUCCESS;
 }
