@@ -28,8 +28,12 @@ main () {
 }
 
 realpath () {
-    # reimplementation of "readlink -fv" for OSX
-    python -c "import os.path, sys; print os.path.realpath(sys.argv[1])" "$1"
+    if [ -x "/bin/realpath" ]; then
+        /bin/realpath "$@"
+    else
+        python -c "import os.path, sys; print os.path.realpath(sys.argv[1])" \
+               "$1"
+    fi
 }
 
 run-tests () {
@@ -39,7 +43,8 @@ run-tests () {
     stage/$arch/build/test/intset_test &&
     stage/$arch/build/test/charstr_test &&
     stage/$arch/build/test/base64_test &&
-    stage/$arch/build/test/date_test
+    stage/$arch/build/test/date_test &&
+    stage/$arch/build/test/priorq_test
 }
 
 main "$@"
