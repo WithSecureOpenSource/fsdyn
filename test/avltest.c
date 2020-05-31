@@ -146,7 +146,7 @@ static void verify_height(avl_tree_t *t, int size)
     check_height(t->root, 1, limit);
 }
 
-static void verity_order(avl_tree_t *t)
+static void verify_order(avl_tree_t *t)
 {
     avl_elem_t *node1 = avl_tree_get_first(t);
     if (node1 == NULL)
@@ -181,7 +181,7 @@ static void verify_tree(avl_tree_t *t, int size, const char *label)
     printf("verify_height (%s:%d)\n", label, size);
     verify_height(t, size);
     printf("verify_order (%s:%d)\n", label, size);
-    verity_order(t);
+    verify_order(t);
 }
 
 static void do_tree(avl_tree_t *t, int size, const char *label)
