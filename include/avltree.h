@@ -175,6 +175,11 @@ avl_elem_t *avl_tree_pop_last(avl_tree_t *tree);
  */
 int avl_tree_empty(avl_tree_t *tree);
 
+/*
+ * Make a shallow copy of the tree.
+ */
+avl_tree_t *avl_tree_copy(avl_tree_t *tree);
+
 #ifdef __cplusplus
 }
 #endif
