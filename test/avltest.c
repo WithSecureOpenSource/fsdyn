@@ -160,6 +160,20 @@ static void verify_order(avl_tree_t *t)
     }
 }
 
+static void verify_copy(avl_tree_t *t)
+{
+    avl_tree_t *copy = avl_tree_copy(t);
+    avl_elem_t *node;
+    for (node = avl_tree_get_first(t); node; node = avl_tree_next(node)) {
+        avl_elem_t *copy_node = avl_tree_pop(copy, avl_elem_get_key(node));
+        assert(copy_node);
+        assert(avl_elem_get_value(node) == avl_elem_get_value(copy_node));
+        destroy_avl_element(copy_node);
+    }
+    assert(avl_tree_empty(copy));
+    destroy_avl_tree(copy);
+}
+
 static void remove_elements(avl_tree_t *t, int begin, int end)
 {
     int i;
@@ -182,6 +196,8 @@ static void verify_tree(avl_tree_t *t, int size, const char *label)
     verify_height(t, size);
     printf("verify_order (%s:%d)\n", label, size);
     verify_order(t);
+    printf("verify_copy (%s:%d)\n", label, size);
+    verify_copy(t);
 }
 
 static void do_tree(avl_tree_t *t, int size, const char *label)
