@@ -13,13 +13,20 @@ const void *avl_elem_get_value(avl_elem_t *element)
     return element->value;
 }
 
-avl_tree_t *make_avl_tree(int (*cmp)(const void *, const void *))
+avl_tree_t *make_avl_tree_2(int (*cmp)(const void *, const void *, void *),
+                            void *obj)
 {
     avl_tree_t *tree = fsalloc(sizeof *tree);
     tree->cmp = cmp;
+    tree->obj = obj;
     tree->root = NULL;
     tree->size = 0;
     return tree;
+}
+
+avl_tree_t *make_avl_tree(int (*cmp)(const void *, const void *))
+{
+    return make_avl_tree_2((void *) cmp, NULL);
 }
 
 static void destroy_subtree(avl_elem_t *element)
@@ -60,8 +67,9 @@ size_t avl_tree_size(avl_tree_t *tree)
 avl_elem_t *avl_tree_get(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
+    void *obj = tree->obj;
     while (element) {
-        int cmp = tree->cmp(key, element->key);
+        int cmp = tree->cmp(key, element->key, obj);
         if (cmp == 0)
             return element;
         if (cmp > 0)
@@ -95,8 +103,9 @@ avl_elem_t *avl_tree_get_before(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
+    void *obj = tree->obj;
     while (element) {
-        int cmp = tree->cmp(key, element->key);
+        int cmp = tree->cmp(key, element->key, obj);
         if (cmp <= 0)
             element = element->left;
         else {
@@ -111,8 +120,9 @@ avl_elem_t *avl_tree_get_on_or_before(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
+    void *obj = tree->obj;
     while (element) {
-        int cmp = tree->cmp(key, element->key);
+        int cmp = tree->cmp(key, element->key, obj);
         if (cmp < 0)
             element = element->left;
         else {
@@ -147,8 +157,9 @@ avl_elem_t *avl_tree_get_after(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
+    void *obj;
     while (element) {
-        int cmp = tree->cmp(key, element->key);
+        int cmp = tree->cmp(key, element->key, obj);
         if (cmp >= 0)
             element = element->right;
         else {
@@ -163,8 +174,9 @@ avl_elem_t *avl_tree_get_on_or_after(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
+    void *obj;
     while (element) {
-        int cmp = tree->cmp(key, element->key);
+        int cmp = tree->cmp(key, element->key, obj);
         if (cmp > 0)
             element = element->right;
         else {
@@ -299,7 +311,7 @@ static int put(avl_tree_t *tree, avl_elem_t **ploc, avl_elem_t *element,
                avl_elem_t **premoved_element)
 {
     avl_elem_t *loc = *ploc;
-    int cmp = tree->cmp(element->key, loc->key);
+    int cmp = tree->cmp(element->key, loc->key, tree->obj);
     if (cmp < 0)
         return put_left(tree, ploc, element, premoved_element);
     if (cmp > 0)
@@ -516,7 +528,7 @@ static avl_elem_t *copy_tree(avl_elem_t *element)
 
 avl_tree_t *avl_tree_copy(avl_tree_t *tree)
 {
-    avl_tree_t *copy = make_avl_tree(tree->cmp);
+    avl_tree_t *copy = make_avl_tree_2(tree->cmp, tree->obj);
     if (tree->root) {
         copy->root = copy_tree(tree->root);
         copy->size = tree->size;

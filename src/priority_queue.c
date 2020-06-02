@@ -5,27 +5,38 @@
 #include "avltree_version.h"
 
 struct priorq {
-    int (*cmp)(const void *, const void *);
-    void (*reloc)(const void *, void *loc);
+    int (*cmp)(const void *elem1, const void *elem2, void *obj);
+    void (*reloc)(const void *elem, void *loc, void *obj);
+    void *obj;
     const void **storage;
     size_t capacity;
     size_t max_capacity;
 };
 
-static void dummy_reloc(const void *value, void *loc)
+static void dummy_reloc(const void *value, void *loc, void *obj)
 {
 }
 
-priorq_t *make_priority_queue(int (*cmp)(const void *, const void *),
-                              void (*reloc)(const void *, void *loc))
+priorq_t *make_priority_queue_2(int (*cmp)(const void *elem1,
+                                           const void *elem2, void *obj),
+                                void (*reloc)(const void *elem, void *loc,
+                                              void *obj),
+                                void *obj)
 {
     priorq_t *prq = fsalloc(sizeof *prq);
     prq->cmp = cmp;
+    prq->obj = obj;
     prq->reloc = reloc ? reloc : dummy_reloc;
     prq->storage = NULL;
     prq->capacity = 0;
     prq->max_capacity = 0;
     return prq;
+}
+
+priorq_t *make_priority_queue(int (*cmp)(const void *, const void *),
+                              void (*reloc)(const void *, void *loc))
+{
+    return make_priority_queue_2((void *) cmp, (void *) reloc, NULL);
 }
 
 void destroy_priority_queue(priorq_t *prq)
@@ -37,14 +48,15 @@ void destroy_priority_queue(priorq_t *prq)
 static void assign(priorq_t *prq, size_t slot, const void *value)
 {
     prq->storage[slot] = value;
-    prq->reloc(value, (void *) (intptr_t) slot);
+    prq->reloc(value, (void *) (intptr_t) slot, prq->obj);
 }
 
 static size_t raise(priorq_t *prq, size_t slot, const void *value)
 {
+    void *obj = prq->obj;
     while (slot) {
         size_t parent = (slot - 1) / 2;
-        if (prq->cmp(value, prq->storage[parent]) >= 0)
+        if (prq->cmp(value, prq->storage[parent], obj) >= 0)
             break;
         assign(prq, slot, prq->storage[parent]);
         slot = parent;
@@ -83,6 +95,7 @@ bool priorq_empty(priorq_t *prq)
 
 static void lower(priorq_t *prq, size_t slot, const void *value)
 {
+    void *obj = prq->obj;
     for (;;) {
         size_t left = slot * 2 + 1;
         if (left >= prq->capacity)
@@ -90,10 +103,10 @@ static void lower(priorq_t *prq, size_t slot, const void *value)
         size_t branch;
         size_t right = left + 1;
         if (right >= prq->capacity ||
-            prq->cmp(prq->storage[left], prq->storage[right]) < 0)
+            prq->cmp(prq->storage[left], prq->storage[right], obj) < 0)
             branch = left;
         else branch = right;
-        if (prq->cmp(value, prq->storage[branch]) <= 0)
+        if (prq->cmp(value, prq->storage[branch], obj) <= 0)
             break;
         assign(prq, slot, prq->storage[branch]);
         slot = branch;
