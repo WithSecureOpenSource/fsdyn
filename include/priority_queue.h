@@ -31,6 +31,16 @@ typedef struct priorq priorq_t;
 priorq_t *make_priority_queue(int (*cmp)(const void *elem1, const void *elem2),
                               void (*reloc)(const void *elem, void *loc));
 
+/* Create a priority queue.
+ *
+ * Like make_priority_queue() but the callback functions are given a
+ * context argument. */
+priorq_t *make_priority_queue_2(int (*cmp)(const void *elem1,
+                                           const void *elem2, void *obj),
+                                void (*reloc)(const void *elem, void *loc,
+                                              void *obj),
+                                void *obj);
+
 /* Destroy the priority queue structure. The elements are not affected. */
 void destroy_priority_queue(priorq_t *prq);
 
