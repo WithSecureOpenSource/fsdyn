@@ -1,5 +1,6 @@
 struct avl_tree {
-    int (*cmp)(const void *, const void *);
+    int (*cmp)(const void *, const void *, void *);
+    void *obj;
     avl_elem_t *root;
     size_t size;
 };

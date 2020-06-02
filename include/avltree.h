@@ -27,7 +27,17 @@ typedef struct avl_elem avl_elem_t;
  *
  * The key comparator cmp() return value is as with memcmp().
  */
-avl_tree_t *make_avl_tree(int (*cmp)(const void *, const void *));
+avl_tree_t *make_avl_tree(int (*cmp)(const void *key1, const void *key2));
+
+/*
+ * Create an avl_tree_t object.
+ *
+ * The key comparator cmp() return value is as with memcmp(). The
+ * comparator is given a context argument.
+ */
+avl_tree_t *make_avl_tree_2(int (*cmp)(const void *key1, const void *key2,
+                                       void *obj),
+                            void *obj);
 
 /*
  * Destroy an avl_tree_t structure. The key and value objects contained
