@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdint.h>
 #include "priority_queue.h"
 #include "fsalloc.h"
@@ -8,6 +9,7 @@ struct priorq {
     void (*reloc)(const void *, void *loc);
     const void **storage;
     size_t capacity;
+    size_t max_capacity;
 };
 
 static void dummy_reloc(const void *value, void *loc)
@@ -22,6 +24,7 @@ priorq_t *make_priority_queue(int (*cmp)(const void *, const void *),
     prq->reloc = reloc ? reloc : dummy_reloc;
     prq->storage = NULL;
     prq->capacity = 0;
+    prq->max_capacity = 0;
     return prq;
 }
 
@@ -51,9 +54,20 @@ static size_t raise(priorq_t *prq, size_t slot, const void *value)
 
 void priorq_enqueue(priorq_t *prq, const void *value)
 {
+    if (prq->capacity == prq->max_capacity) {
+        size_t n = 1;
+        while (n < prq->capacity + 1) {
+            if (n > SIZE_MAX / 2) {
+                n = SIZE_MAX;
+                break;
+            }
+            n <<= 1;
+        }
+        prq->max_capacity = n;
+        prq->storage =
+            fsrealloc(prq->storage, prq->max_capacity * sizeof *prq->storage);
+    }
     size_t slot = prq->capacity++;
-    prq->storage =
-        fsrealloc(prq->storage, prq->capacity * sizeof *prq->storage);
     assign(prq, raise(prq, slot, value), value);
 }
 

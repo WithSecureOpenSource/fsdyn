@@ -498,3 +498,28 @@ avl_elem_t *avl_tree_pop_last(avl_tree_t *tree)
         avl_tree_detach(tree, element);
     return element;
 }
+
+static avl_elem_t *copy_tree(avl_elem_t *element)
+{
+    avl_elem_t *copy = make_element(element->key, element->value);
+    copy->balance = element->balance;
+    if (element->left) {
+        copy->left = copy_tree(element->left);
+        copy->left->parent = copy;
+    }
+    if (element->right) {
+        copy->right = copy_tree(element->right);
+        copy->right->parent = copy;
+    }
+    return copy;
+}
+
+avl_tree_t *avl_tree_copy(avl_tree_t *tree)
+{
+    avl_tree_t *copy = make_avl_tree(tree->cmp);
+    if (tree->root) {
+        copy->root = copy_tree(tree->root);
+        copy->size = tree->size;
+    }
+    return copy;
+}
