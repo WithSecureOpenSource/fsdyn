@@ -62,6 +62,13 @@ size_t priorq_size(priorq_t *prq);
  * If the priority queue is empty, NULL is returned. */
 const void *priorq_dequeue(priorq_t *prq);
 
+/* Return the element with the highest priority from the priority
+ * queue without removing it. The element that compares the least in
+ * terms of cmp() is considered highest priority.
+ *
+ * If the priority queue is empty, NULL is returned. */
+const void *priorq_peek(priorq_t *prq);
+
 /* Remove some element from the priority queue and return it. The
  * function may execute faster than priorq_dequeue().
  *

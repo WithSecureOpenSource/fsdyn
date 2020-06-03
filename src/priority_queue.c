@@ -129,6 +129,13 @@ const void *priorq_dequeue(priorq_t *prq)
     return value;
 }
 
+const void *priorq_peek(priorq_t *prq)
+{
+    if (priorq_empty(prq))
+        return NULL;
+    return prq->storage[0];
+}
+
 const void *priorq_pop(priorq_t *prq)
 {
     if (priorq_empty(prq))
