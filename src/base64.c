@@ -129,17 +129,17 @@ char *base64_encode_simple(const void *buffer, size_t size)
     return result;
 }
 
-static bool good_base64_tail(const char *s, unsigned bit_count)
+static bool good_base64_tail(const char *tail, size_t tail_size, unsigned bit_count)
 {
     switch (bit_count) {
         case 0:
-            return !s[0];
+            return tail_size == 0;
         case 6:
             return false;
         case 4:
-            return s[0] == '=' && s[1] == '=' && !s[2];
+            return tail_size == 2 && tail[0] == '=' && tail[1] == '=';
         case 2:
-            return s[0] == '=' && !s[1];
+            return tail_size == 1 && tail[0] == '=';
         default:
             assert(false);
     }
@@ -210,7 +210,7 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
         }
     }
     if (bits & ~(~0 << bit_count) ||
-        !good_base64_tail(&source[si], bit_count)) {
+        !good_base64_tail(&source[si], source_size - si, bit_count)) {
         errno = EILSEQ;
         return -1;
     }
