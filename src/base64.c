@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <assert.h>
+#include <string.h>
 #include "fsalloc.h"
 #include "base64.h"
 #include "avltree_version.h"
@@ -131,18 +132,28 @@ char *base64_encode_simple(const void *buffer, size_t size)
 
 static bool good_base64_tail(const char *tail, size_t tail_size, unsigned bit_count)
 {
+    const char *padding;
     switch (bit_count) {
         case 0:
-            return tail_size == 0;
+            padding = "";
+            break;
         case 6:
             return false;
         case 4:
-            return tail_size == 2 && tail[0] == '=' && tail[1] == '=';
+            padding = "==";
+            break;
         case 2:
-            return tail_size == 1 && tail[0] == '=';
+            padding = "=";
+            break;
         default:
             assert(false);
     }
+    size_t padding_len = strlen(padding);
+    return tail_size >= padding_len &&
+        !strncmp(tail, padding, padding_len) &&
+        (tail_size == padding_len ||
+         !tail[padding_len]);
+
 }
 
 static int8_t get_bits(char c, char pos62, char pos63, bool ignore_wsp)

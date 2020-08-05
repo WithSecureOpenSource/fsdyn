@@ -48,6 +48,15 @@ static bool test_decoding_length(void)
                     data[i].encoded);
             return false;
         }
+
+        count =
+            base64_decode_buffer(data[i].encoded, -1,
+                                 NULL, 0, -1, -1, false);
+        if (count != strlen(data[i].decoded)) {
+            fprintf(stderr, "Error: bad Base64 decoding size (1) for \"%s\"\n",
+                    data[i].encoded);
+            return false;
+        }
     }
     return true;
 }
