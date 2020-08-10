@@ -1,39 +1,17 @@
 Import('env')
  
 env['CCFLAGS'] += ' -O0'
+env['CPPPATH'] = [ '../components/avltree/include' ]
 env['LIBPATH'] = [ '../components/avltree/lib' ]
+env['LIBS'] = [ 'fsdyn' ]
 
-env.Program('avltest', [ 'avltest.c' ],
+env.Program('avltest.c',
             CPPPATH=[ '#include' ], LIBS=[ 'fsdyn', 'm' ])
-
-env.Program('bytearray_test', [ 'bytearray_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('charstr_test', [ 'charstr_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('charstr_normalization_test', [ 'charstr_normalization_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('intset_test', [ 'intset_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('date_test', [ 'date_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('base64_test', [ 'base64_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('priorq_test', [ 'priorq_test.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
-
-env.Program('priorq_perf', [ 'priorq_perf.c' ],
-            CPPPATH=[ '../components/avltree/include' ],
-            LIBS=[ 'fsdyn' ])
+env.Program('base64_test.c')
+env.Program('bytearray_test.c')
+env.Program('charstr_normalization_test.c')
+env.Program('charstr_test.c')
+env.Program('date_test.c')
+env.Program('intset_test.c')
+env.Program('priorq_perf.c')
+env.Program('priorq_test.c')
