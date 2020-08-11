@@ -65,5 +65,6 @@ env.Command("unicode_decomposition.c",
 
 env.Command("unicode_recomposition.c",
             [ "recomposition.py",
-              "#unicode/UnicodeData.txt" ],
+              "#unicode/UnicodeData.txt",
+              "#unicode/CompositionExclusions.txt" ],
             """$SOURCES >$TARGET""")
