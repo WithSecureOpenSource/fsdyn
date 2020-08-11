@@ -427,7 +427,7 @@ const char *charstr_decode_utf8_codepoint(const char *s, const char *end,
             if (!(*s & 0x10))
                 cp = *s++ & 0x0f;
             else {
-                if (*s & 0x80)
+                if (*s & 0x08)
                     return NULL;
                 cp = *s++ & 0x07;
                 if (s == end || (*s & 0xc0) != 0x80)
