@@ -248,7 +248,7 @@ static int recomposer_feed(recomposer_t *recomposer, int codepoint)
             }
             if (ccc) {
                 if (recomposer->wr >= MAX_CC_SEQ_LENGTH) {
-                    errno = EILSEQ;
+                    errno = ENOBUFS;
                     return -1;
                 }
                 recomposer->ccs[recomposer->wr++] = codepoint;
