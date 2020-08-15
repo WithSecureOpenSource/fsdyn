@@ -2,7 +2,7 @@
 #include "fsalloc.h"
 #include "intset.h"
 #include "intset_imp.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 #define LONG_BIT (sizeof(unsigned long) * CHAR_BIT)
 #define BITS_TO_LONGS(bits) ((bits + LONG_BIT - 1) / LONG_BIT)

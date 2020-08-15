@@ -3,7 +3,7 @@
 #include "list.h"
 #include "hashtable.h"
 #include "hashtable_imp.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 /* Values from: https://planetmath.org/goodhashtableprimes */
 static const size_t GOOD_SIZES[] = {

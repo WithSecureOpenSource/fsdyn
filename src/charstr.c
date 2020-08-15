@@ -3,7 +3,7 @@
 #include <errno.h>
 #include "fsalloc.h"
 #include "charstr.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 static const struct {
     char lower, upper;

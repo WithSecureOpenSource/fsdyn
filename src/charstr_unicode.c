@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <assert.h>
 #include "charstr.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 charstr_unicode_category_t charstr_unicode_category(int codepoint)
 {
