@@ -1,9 +1,9 @@
 Import('env')
 import os
  
-env.Command('avltree_version.c', [],
-            """echo 'const char *avltree_version_tag = \
-    "F-S_v:: avltree 1.0.%s";' >$TARGET""" % os.getenv("BUILD_NUMBER", "9999"))
+env.Command('fsdyn_version.c', [],
+            """echo 'const char *fsdyn_version_tag = \
+    "F-S_v:: fsdyn 1.0.%s";' >$TARGET""" % os.getenv("BUILD_NUMBER", "9999"))
 
 env['CCFLAGS'] += ' -fPIC'      # make objects usable for shared libs
  
@@ -13,7 +13,7 @@ env.ParseConfig(env['CONFIG_PARSER'])
 
 env.StaticLibrary('fsdyn',
                   [ 'avltree.c',
-                    'avltree_version.c',
+                    'fsdyn_version.c',
                     'bytearray.c',
                     'date.c',
                     'hashtable.c',

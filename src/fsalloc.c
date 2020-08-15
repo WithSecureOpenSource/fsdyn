@@ -1,6 +1,6 @@
 #include <string.h>
 #include "fsalloc.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 static void *naive_realloc(void *ptr, size_t size)
 {

@@ -1,7 +1,7 @@
 #include "avltree.h"
 #include "avltree_imp.h"
 #include "fsalloc.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 const void *avl_elem_get_key(avl_elem_t *element)
 {

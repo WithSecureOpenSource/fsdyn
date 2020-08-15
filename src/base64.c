@@ -3,7 +3,7 @@
 #include <string.h>
 #include "fsalloc.h"
 #include "base64.h"
-#include "avltree_version.h"
+#include "fsdyn_version.h"
 
 size_t base64_encoding_size(size_t binary_size)
 {
