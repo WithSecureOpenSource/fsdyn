@@ -293,7 +293,8 @@ char *charstr_printf(const char *format, ...)
     __attribute__((format(printf, 1, 2)));
 
 /* The stdarg variant of charstr_printf(). */
-char *charstr_vprintf(const char *format, va_list ap);
+char *charstr_vprintf(const char *format, va_list ap)
+    __attribute__((format(printf, 1, 0)));
 
 
 #ifdef __cplusplus
