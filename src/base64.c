@@ -130,7 +130,20 @@ char *base64_encode_simple(const void *buffer, size_t size)
     return result;
 }
 
-static bool good_base64_tail(const char *tail, size_t tail_size, unsigned bit_count)
+static bool good_termination(const char *remainder, size_t remainder_size,
+                             bool ignore_wsp)
+{
+    if (!ignore_wsp)
+        return remainder_size == 0 || !*remainder;
+    for (; remainder_size && *remainder; remainder++, remainder_size--)
+        if (base64_bitfield_decoding[*remainder & 0xff] !=
+            BASE64_ILLEGAL_WHITESPACE)
+            return false;
+    return true;
+}
+
+static bool good_base64_tail(const char *tail, size_t tail_size,
+                             unsigned bit_count, bool ignore_wsp)
 {
     const char *padding;
     switch (bit_count) {
@@ -151,9 +164,8 @@ static bool good_base64_tail(const char *tail, size_t tail_size, unsigned bit_co
     size_t padding_len = strlen(padding);
     return tail_size >= padding_len &&
         !strncmp(tail, padding, padding_len) &&
-        (tail_size == padding_len ||
-         !tail[padding_len]);
-
+        good_termination(tail + padding_len, tail_size - padding_len,
+                         ignore_wsp);
 }
 
 static int8_t get_bits(char c, char pos62, char pos63, bool ignore_wsp)
@@ -221,7 +233,8 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
         }
     }
     if (bits & ~(~0 << bit_count) ||
-        !good_base64_tail(&source[si], source_size - si, bit_count)) {
+        !good_base64_tail(&source[si], source_size - si, bit_count,
+                          ignore_wsp)) {
         errno = EILSEQ;
         return -1;
     }
@@ -234,11 +247,11 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
 
 void *base64_decode_simple(const char *encoding, size_t *binary_size)
 {
-    ssize_t count = base64_decode_buffer(encoding, -1, NULL, 0, -1, -1, false);
+    ssize_t count = base64_decode_buffer(encoding, -1, NULL, 0, -1, -1, true);
     if (count < 0)
         return NULL;
     uint8_t *result = fsalloc(count + 1);
-    (void) base64_decode_buffer(encoding, -1, result, count, -1, -1, false);
+    (void) base64_decode_buffer(encoding, -1, result, count, -1, -1, true);
     result[count] = '\0';
     *binary_size = count;
     return result;

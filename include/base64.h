@@ -50,10 +50,11 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
                              char pos62, char pos63, bool ignore_wsp);
 
 /* Create a freshly allocated binary blob from a NUL-terminated,
- * Base64-encoded string. The return value is NULL, and errno is set,
- * in case of an error. Otherwise, use fsfree() to free it. A
- * complimentary NUL terminator is appended to the decoding, but it is
- * not included in the returned binary_size. */
+ * Base64-encoded string (with whitespace ignored). The return value
+ * is NULL, and errno is set, in case of an error. Otherwise, use
+ * fsfree() to free it. A complimentary NUL terminator is appended to
+ * the decoding, but it is not included in the returned
+ * binary_size. */
 void *base64_decode_simple(const char *encoding, size_t *binary_size);
 
 /* The standard Base64 encoding for 6-bit bitfields. 62 maps to '+'
