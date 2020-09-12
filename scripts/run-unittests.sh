@@ -59,6 +59,7 @@ run-tests () {
     run-test $arch stage/$arch/build/test/charstr_test &&
     run-test $arch stage/$arch/build/test/base64_test &&
     run-test $arch stage/$arch/build/test/date_test &&
+    run-test $arch stage/$arch/build/test/float_test &&
     run-test $arch stage/$arch/build/test/priorq_test
 }
 
