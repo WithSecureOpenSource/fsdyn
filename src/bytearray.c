@@ -27,7 +27,7 @@ byte_array_t *make_byte_array(size_t max_size)
     return array;
 }
 
-byte_array_t *share_byte_array(byte_array_t * array)
+byte_array_t *share_byte_array(byte_array_t *array)
 {
     array->ref_count++;
     return array;
