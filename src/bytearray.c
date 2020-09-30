@@ -10,6 +10,7 @@ struct byte_array {
     size_t cursor;
     size_t max_size;
     size_t size;
+    uint32_t ref_count;
 };
 
 byte_array_t *make_byte_array(size_t max_size)
@@ -22,11 +23,20 @@ byte_array_t *make_byte_array(size_t max_size)
         array->size = max_size;
     array->data = fsalloc(array->size);
     array->data[0] = 0;
+    array->ref_count = 1;
+    return array;
+}
+
+byte_array_t *share_byte_array(byte_array_t *array)
+{
+    array->ref_count++;
     return array;
 }
 
 void destroy_byte_array(byte_array_t *array)
 {
+    if (--array->ref_count)
+        return;
     fsfree(array->data);
     fsfree(array);
 }

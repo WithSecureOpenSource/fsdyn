@@ -19,6 +19,7 @@ typedef struct byte_array byte_array_t;
  * contiguously.
  */
 byte_array_t *make_byte_array(size_t max_size);
+byte_array_t *share_byte_array(byte_array_t *array);
 void destroy_byte_array(byte_array_t *array);
 
 typedef ssize_t (*byte_array_read_cb)(void *obj, void *buf, size_t count);
