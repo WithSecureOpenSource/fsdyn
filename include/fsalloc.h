@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 typedef void *(*fs_realloc_t)(void *, size_t);
-typedef void (*fs_reallocator_counter_t)(ssize_t count);
+typedef void (*fs_reallocator_counter_t)(int count);
 
 /* Set a custom reallocator. Unlike POSIX realloc(), the argument
  * function must deallocate a memory block if size is zero. */
@@ -59,7 +59,7 @@ fs_reallocator_counter_t fs_get_reallocator_counter(void);
  *   fs_reallocator_skew(1);
  *
  * to balance the books. */
-void fs_reallocator_skew(ssize_t count);
+void fs_reallocator_skew(int count);
 
 #ifdef __cplusplus
 }
