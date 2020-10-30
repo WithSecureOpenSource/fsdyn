@@ -40,11 +40,11 @@ void fs_set_reallocator_counter(fs_reallocator_counter_t counter);
 /* Return the current reallocator counter. */
 fs_reallocator_counter_t fs_get_reallocator_counter(void);
 
-/* A customer reallocator may want to maintain statistics of
- * outstanding memory blocks. Typically, the application may want to
- * test that at the end of the execution, the number of allocated
- * blocks is zero. However, there are valid cases where libraries make
- * permanent memory allocations and spoil the statistic. The function
+/* A custom reallocator may want to maintain statistics of outstanding
+ * memory blocks. Typically, the application may want to test that at
+ * the end of the execution, the number of allocated blocks is zero.
+ * However, there are valid cases where libraries make permanent
+ * memory allocations and spoil the statistic. The function
  * fs_reallocator_skew() is a mechanism for such a library function to
  * restore meaning to the count. When it makes a permanent memory
  * allocation of a single memory block, the library function should
