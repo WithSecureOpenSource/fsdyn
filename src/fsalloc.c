@@ -29,7 +29,7 @@ fs_realloc_t fs_get_reallocator(void)
     return reallocator;
 }
 
-static void dummy_reallocator_counter(ssize_t count)
+static void dummy_reallocator_counter(int count)
 {
 }
 
@@ -46,7 +46,7 @@ fs_reallocator_counter_t fs_get_reallocator_counter()
     return reallocator_counter;
 }
 
-void fs_reallocator_skew(ssize_t count)
+void fs_reallocator_skew(int count)
 {
     reallocator_counter(count);
 }
