@@ -343,6 +343,26 @@ const char *charstr_idna_mapping(int codepoint);
 
 #ifdef __cplusplus
 }
+
+#include <functional>
+#include <memory>
+
+namespace fsecure {
+namespace fsdyn {
+
+using CharstrUrlEncoderPtr =
+    std::unique_ptr<charstr_url_encoder_t,
+                    std::function<void(charstr_url_encoder_t *)>>;
+
+inline CharstrUrlEncoderPtr make_charstr_url_encoder_ptr(
+    charstr_url_encoder_t *encoder)
+{
+    return { encoder, charstr_destroy_url_encoder };
+}
+
+} // namespace fsdyn
+} // namespace fsecure
+
 #endif
 
 #endif
