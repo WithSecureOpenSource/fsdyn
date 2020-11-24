@@ -48,6 +48,27 @@ size_t byte_array_size(byte_array_t *array);
 
 #ifdef __cplusplus
 }
+
+#include <functional>
+#include <memory>
+
+namespace fsecure {
+namespace fsdyn {
+
+// std::unique_ptr for byte_array_t with custom deleter.
+using ByteArrayPtr =
+    std::unique_ptr<byte_array_t, std::function<void(byte_array_t *)>>;
+
+// Create ByteArrayPtr that takes ownership of the provided byte_array_t. Pass
+// nullptr to create an instance which doesn't contain any byte_array_t object.
+inline ByteArrayPtr make_byte_array_ptr(byte_array_t *array)
+{
+    return { array, destroy_byte_array };
+}
+
+} // namespace fsdyn
+} // namespace fsecure
+
 #endif
 
 #endif
