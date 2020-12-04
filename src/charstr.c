@@ -571,7 +571,7 @@ charstr_url_encoder_t *charstr_create_url_encoder(const char *reserve,
     for (p = reserve; *p; p++) {
         i = (uint8_t) *p;
         fsfree(encoder->table[i]);
-        encoder->table[i] = charstr_printf("%%%02x", i);
+        encoder->table[i] = charstr_printf("%%%02X", i);
     }
     for (p = unreserve; *p; p++) {
         i = (uint8_t) *p;
