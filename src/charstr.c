@@ -520,7 +520,7 @@ char *charstr_encode_utf8_codepoint(int codepoint, char *s, const char *end)
 }
 
 struct charstr_url_encoder {
-    char *table[256];
+    char table[256][4];
 };
 
 static charstr_url_encoder_t url_encoder = {
@@ -564,28 +564,22 @@ charstr_url_encoder_t *charstr_create_url_encoder(const char *reserve,
                                                   const char *unreserve)
 {
     charstr_url_encoder_t *encoder = fsalloc(sizeof *encoder);
+    memcpy(encoder, &url_encoder, sizeof *encoder);
     int i;
-    for (i = 0; i < 256; i++)
-        encoder->table[i] = charstr_dupstr(url_encoder.table[i]);
     const char *p;
     for (p = reserve; *p; p++) {
         i = (uint8_t) *p;
-        fsfree(encoder->table[i]);
-        encoder->table[i] = charstr_printf("%%%02X", i);
+        snprintf(encoder->table[i], sizeof encoder->table[i], "%%%02X", i);
     }
     for (p = unreserve; *p; p++) {
         i = (uint8_t) *p;
-        fsfree(encoder->table[i]);
-        encoder->table[i] = charstr_printf("%c", i);
+        snprintf(encoder->table[i], sizeof encoder->table[i], "%c", i);
     }
     return encoder;
 }
 
 void charstr_destroy_url_encoder(charstr_url_encoder_t *encoder)
 {
-    int i;
-    for (i = 0; i < 256; i++)
-        fsfree(encoder->table[i]);
     fsfree(encoder);
 }
 
