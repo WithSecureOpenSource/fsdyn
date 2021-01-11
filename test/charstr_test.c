@@ -195,6 +195,27 @@ static bool test_url_encoding(void)
     return result;
 }
 
+static bool test_punycode_encoding(void)
+{
+    char *encoding = charstr_punycode_encode("hyvää.yötä");
+    if (!encoding)
+        return false;
+    if (strcmp(encoding, "xn--hyv-slaa.xn--yt-wia4e")) {
+        fsfree(encoding);
+        return false;
+    }
+    fsfree(encoding);
+    encoding = charstr_punycode_encode("hyvää.yötä.");
+    if (!encoding)
+        return false;
+    if (strcmp(encoding, "xn--hyv-slaa.xn--yt-wia4e.")) {
+        fsfree(encoding);
+        return false;
+    }
+    fsfree(encoding);
+    return true;
+}
+
 int main()
 {
     if (!test_decode_utf8_codepoint())
@@ -212,6 +233,8 @@ int main()
     if (!test_sanitization())
         return EXIT_FAILURE;
     if (!test_url_encoding())
+        return EXIT_FAILURE;
+    if (!test_punycode_encoding())
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
     return EXIT_SUCCESS;

@@ -296,6 +296,17 @@ char *charstr_printf(const char *format, ...)
 char *charstr_vprintf(const char *format, va_list ap)
     __attribute__((format(printf, 1, 0)));
 
+/* Encode the hostname using punycode. The argument must be valid
+ * UTF-8 and also a valid Unicode hostname. Return an ASCII string or
+ * NULL in case of an input error. The return value should be freed
+ * using fsfree().
+ *
+ * Limitations:
+ *  - No NFC-normalization is performed on the argument.
+ *  - Codepoints illegal in a DNS name may not be detected as erroneous.
+ *  - Codepoints that should be remapped are not.
+ */
+char *charstr_punycode_encode(const char *hostname);
 
 #ifdef __cplusplus
 }
