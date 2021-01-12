@@ -243,6 +243,8 @@ static char *encode_nfc(const char *hostname, const char *end)
         if (!q)
             return NULL;
     }
+    /* TODO: https://unicode.org/reports/tr46/#Processing
+     * CheckBidi & CheckJoiners */
     return encode_filtered(workarea, q);
 }
 
