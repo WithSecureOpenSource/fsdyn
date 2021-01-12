@@ -41,7 +41,7 @@ static void generate_mappings()
            "{\n"
            "    switch (codepoint) {\n");
     for (int cp = 0; cp < N_CP; cp++)
-        if (charstr_ends_with(table[cp].status, "mapped")) {
+        if (table[cp].mapping && *table[cp].mapping) {
             printf("        case %d: return \"", cp);
             for (const char *p = table[cp].mapping; *p; p++)
                 printf("\\%o", *p & 0xff);

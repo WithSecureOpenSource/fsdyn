@@ -197,30 +197,25 @@ static bool test_url_encoding(void)
 
 static bool test_punycode_encoding(void)
 {
-    char *encoding = charstr_punycode_encode("hyvää.yötä");
-    if (!encoding)
-        return false;
-    if (strcmp(encoding, "xn--hyv-slaa.xn--yt-wia4e")) {
+    struct {
+        const char *input, *output;
+    } data[] = {
+        { "hyvää.yötä", "xn--hyv-slaa.xn--yt-wia4e" },
+        { "hyvää.yötä.", "xn--hyv-slaa.xn--yt-wia4e." },
+        { "ä.ö", "xn--4ca.xn--nda" },
+        { "Ä.Ö.", "xn--4ca.xn--nda." },
+        { NULL }
+    };
+    for (int i; data[i].input; i++) {
+        char *encoding = charstr_punycode_encode(data[i].input);
+        if (!encoding)
+            return false;
+        if (strcmp(encoding, data[i].output)) {
+            fsfree(encoding);
+            return false;
+        }
         fsfree(encoding);
-        return false;
     }
-    fsfree(encoding);
-    encoding = charstr_punycode_encode("hyvää.yötä.");
-    if (!encoding)
-        return false;
-    if (strcmp(encoding, "xn--hyv-slaa.xn--yt-wia4e.")) {
-        fsfree(encoding);
-        return false;
-    }
-    fsfree(encoding);
-    encoding = charstr_punycode_encode("ä.ö.");
-    if (!encoding)
-        return false;
-    if (strcmp(encoding, "xn--4ca.xn--nda.")) {
-        fsfree(encoding);
-        return false;
-    }
-    fsfree(encoding);
     return true;
 }
 

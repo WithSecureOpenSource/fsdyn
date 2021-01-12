@@ -215,8 +215,9 @@ static char *encode_filtered(const char *hostname, const char *end)
 
 static char *safecopy(const char *src, char *dest, char *end)
 {
-    size_t size = end - dest;
-    if (!dest || strlen(src) > size)
+    size_t capacity = end - dest;
+    size_t size = strlen(src);
+    if (!dest || size > capacity)
         return NULL;
     memcpy(dest, src, size);
     return dest + size;
