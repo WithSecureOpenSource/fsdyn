@@ -4,6 +4,8 @@
 #include "charstr.h"
 
 enum {
+    MAX_DNS_NAME_LENGTH = 254,
+    MAX_DNS_LABEL_LENGTH = 63,
     BASE = 36,
     TMIN = 1,
     TMAX = 26,
@@ -135,8 +137,7 @@ static const char *punycode_encode(const char *input, const char *end,
     size_t nonascii_count;
     size_t pc_count;
     const char *next =
-        punycode_encode_pass1(input, end, &pc_count,
-                              ascii, &ascii_count,
+        punycode_encode_pass1(input, end, &pc_count, ascii, &ascii_count,
                               nonascii, &nonascii_count);
     if (!next)
         return NULL;
@@ -164,17 +165,23 @@ static const char *punycode_encode(const char *input, const char *end,
     o = emit(o, end_output, output_size, '-');
     o = punycode_encode_pass2(input, end, o, end_output, output_size,
                               ascii_count, nonascii, nonascii_count);
-    if (*output_size > 63)      /* maximum allowed label size */
+    if (*output_size > MAX_DNS_LABEL_LENGTH)
         return NULL;
     return next;
 }
  
-char *charstr_punycode_encode(const char *hostname)
+static bool is_all_ascii(const char *s)
 {
-    size_t length = strlen(hostname);
-    if (length > 255)
+    while (*s)
+        if (*s++ & 0x80)
+            return false;
+    return true;
+}
+
+static char *encode_nfc(const char *hostname, const char *end)
+{
+    if (end - hostname > MAX_DNS_NAME_LENGTH) /* encoding won't shorten it */
         return NULL;
-    const char *end = hostname + length;
     const char *p = hostname;
     size_t output_size = 0;
     do {
@@ -184,9 +191,9 @@ char *charstr_punycode_encode(const char *hostname)
             return NULL;
         output_size += output_label_size + 1;
     } while (end - p++ > 1);    /* allow the DNS name to end in a '.' */
-    if (output_size > 253)      /* maximum allowed DNS name size */
+    if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
         return NULL;
-    output_size += end - p + 1; /* but allow a final '.' */
+    output_size += end - p + 1; /* allow a final '.' */
     char *encoding = fsalloc(output_size);
     char *q = encoding;
     p = hostname;
@@ -198,5 +205,43 @@ char *charstr_punycode_encode(const char *hostname)
         *q++ = '.';
     }  while (end - p++ > 1);
     q[end - p] = '\0';
+    return encoding;
+}
+
+static char *encode_nfd(const char *hostname, const char *end)
+{
+    size_t worklen = end - hostname; /* recomposing won't grow it */
+    char *workarea = fsalloc(worklen + 1);
+    char *workend =
+        charstr_unicode_recompose(hostname, end, workarea, workend);
+    if (!workend) {
+        fsfree(workarea);
+        return NULL;
+    }
+    char *encoding = encode_nfc(workarea, workend);
+    fsfree(workarea);
+    return encoding;
+}
+
+char *charstr_punycode_encode(const char *hostname)
+{
+    if (is_all_ascii(hostname))
+        return charstr_dupstr(hostname);
+    size_t length = strlen(hostname);
+    const char *end = hostname + length;
+    if (charstr_unicode_canonically_composed(hostname, end))
+        return encode_nfc(hostname, end);
+    if (charstr_unicode_canonically_decomposed(hostname, end))
+        return encode_nfd(hostname, end);
+    size_t worklen = 3 * length; /* should be enough for decomposing */
+    char *workarea = fsalloc(worklen + 1);
+    char *workend =
+        charstr_unicode_decompose(hostname, end, workarea, workend);
+    if (!workend) {
+        fsfree(workarea);
+        return NULL;
+    }
+    char *encoding = encode_nfd(workarea, workend);
+    fsfree(workarea);
     return encoding;
 }
