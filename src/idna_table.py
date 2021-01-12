@@ -2,6 +2,11 @@
 
 import sys
 
+try:
+    chr = unichr                # python2
+except NameError:
+    def ord(x): return x        # python3
+
 def main():
     table = [None] * 0x110000
     for line in open(sys.argv[1]):
@@ -71,7 +76,7 @@ const char *charstr_idna_mapping(int codepoint)
         if status.endswith("mapped"):
             sys.stdout.write('''        case {}: return "'''.format(cp))
             for b in mapping.encode("UTF-8"):
-                sys.stdout.write("\\{:o}".format(b))
+                sys.stdout.write("\\%o" % ord(b))
             sys.stdout.write('''";
 ''')
     sys.stdout.write("""        default: return NULL;
