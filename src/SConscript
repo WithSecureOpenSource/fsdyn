@@ -36,8 +36,15 @@ env.StaticLibrary('fsdyn',
                     "unicode_decomposition.c",
                     "unicode_recomposition.c" ])
 
+env.Program("gen_idna_table",
+            [ "gen_idna_table.c",
+              "charstr.c",
+              "list.c",
+              "fsalloc.c",
+              'fsdyn_version.c' ])
+
 env.Command("idna_table.c",
-            [ "idna_table.py",
+            [ "gen_idna_table",
               "#idna/IdnaMappingTable.txt" ],
             """$SOURCES >$TARGET""")
 

@@ -84,6 +84,16 @@ list_t *charstr_split(const char *s, char delim, unsigned max_split);
 unsigned charstr_split_into_array(const char *s, char delim, char **array,
                                   unsigned max_split);
 
+/* Return a fresh list of strings split at any nonempty sequence of
+ * CHARSTR_WHITESPACE characters. If the argument only contains
+ * whitespace, an empty list is returned. */
+list_t *charstr_split_atoms(const char *s);
+
+/* Return a copy of s with initial and final CHARSTR_WHITESPACE
+ * characters stripped. The return value should be freed with
+ * fsfree(). */
+char *charstr_strip(const char *s);
+
 /* Decode a single UTF-8-encode Unicode codepoint. The encoding begins
  * at s and is limited by end (which is the end of the buffer, not the
  * end of the codepoint encoding). If s is NULL, return NULL. If end is

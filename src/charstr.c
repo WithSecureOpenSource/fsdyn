@@ -404,6 +404,33 @@ unsigned charstr_split_into_array(const char *s, char delim, char **array,
     return i;
 }
 
+list_t *charstr_split_atoms(const char *s)
+{
+    list_t *list = make_list();
+    for (;;) {
+        for (;; s++)
+            if (!*s)
+                return list;
+            else if (!(charstr_char_class(*s) & CHARSTR_WHITESPACE))
+                break;
+        const char *p = s + 1;
+        while (*p && !(charstr_char_class(*p) & CHARSTR_WHITESPACE))
+            p++;
+        list_append(list, charstr_dupsubstr(s, p));
+        s = p;
+    }
+}
+
+char *charstr_strip(const char *s)
+{
+    while (*s && charstr_char_class(*s) & CHARSTR_WHITESPACE)
+        s++;
+    const char *end = s + strlen(s);
+    while (end > s && charstr_char_class(end[-1]) & CHARSTR_WHITESPACE)
+        end--;
+    return charstr_dupsubstr(s, end);
+}
+
 static bool valid_unicode(int codepoint)
 {
     return (codepoint >= 0 && codepoint <= 0xd7ff) ||
