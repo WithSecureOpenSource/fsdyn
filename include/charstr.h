@@ -302,7 +302,6 @@ char *charstr_vprintf(const char *format, va_list ap)
  * using fsfree().
  *
  * Limitations:
- *  - No NFC-normalization is performed on the argument.
  *  - Codepoints illegal in a DNS name may not be detected as erroneous.
  *  - Codepoints that should be remapped are not.
  */
