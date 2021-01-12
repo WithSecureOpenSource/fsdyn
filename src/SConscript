@@ -18,6 +18,7 @@ env.StaticLibrary('fsdyn',
                     'date.c',
                     'float.c',
                     'hashtable.c',
+                    'idna_table.c',
                     'integer.c',
                     'intset.c',
                     'list.c',
@@ -34,6 +35,11 @@ env.StaticLibrary('fsdyn',
                     "unicode_allowed_in_normal_form.c",
                     "unicode_decomposition.c",
                     "unicode_recomposition.c" ])
+
+env.Command("idna_table.c",
+            [ "idna_table.py",
+              "#idna/IdnaMappingTable.txt" ],
+            """$SOURCES >$TARGET""")
 
 env.Command("unicode_categories.c",
             [ "categorize.py",

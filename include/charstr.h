@@ -307,6 +307,21 @@ char *charstr_vprintf(const char *format, va_list ap)
  */
 char *charstr_punycode_encode(const char *hostname);
 
+/* You probably don't need these functions. They are used internally
+ * in the punycode encoding. */
+bool charstr_idna_status_is_deviation(int codepoint);
+bool charstr_idna_status_is_disallowed(int codepoint);
+bool charstr_idna_status_is_disallowed_STD3_valid(int codepoint);
+bool charstr_idna_status_is_disallowed_STD3_mapped(int codepoint);
+bool charstr_idna_status_is_ignored(int codepoint);
+bool charstr_idna_status_is_mapped(int codepoint);
+bool charstr_idna_status_is_valid(int codepoint);
+
+/* You probably don't need this functions. It is used internally in
+ * the punycode encoding. The return value is an UTF-8 string or
+ * NULL. */
+const char *charstr_idna_mapping(int codepoint);
+
 #ifdef __cplusplus
 }
 #endif

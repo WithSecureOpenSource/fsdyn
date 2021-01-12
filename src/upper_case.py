@@ -3,7 +3,7 @@
 import sys
 
 def main():
-    sys.stdout.write("""#include "stdint.h"
+    sys.stdout.write("""#include <stdint.h>
 
 const uint32_t _charstr_unicode_upper_case[0x110000] = {
 """)
