@@ -498,7 +498,7 @@ char *charstr_sanitize_utf8(const char *s)
 
 char *charstr_encode_utf8_codepoint(int codepoint, char *s, const char *end)
 {
-    if (s == end)
+    if (!s || s == end)
         return NULL;
     if (codepoint >= 0x80) {
         if (codepoint >= 0x800) {

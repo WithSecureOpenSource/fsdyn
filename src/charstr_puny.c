@@ -40,6 +40,18 @@ static void record_nonascii(int codepoint, int nonascii[],
     *nonascii_count = c + 1;
 }
 
+static bool is_mark(int codepoint)
+{
+    switch (charstr_unicode_category(codepoint)) {
+        case UNICODE_CATEGORY_Mc:
+        case UNICODE_CATEGORY_Me:
+        case UNICODE_CATEGORY_Mn:
+            return true;
+        default:
+            return false;
+    }
+}
+
 static const char *punycode_encode_pass1(const char *p, const char *end,
                                          size_t *pc_count,
                                          char ascii[], size_t *ascii_count,
@@ -50,6 +62,7 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
         return NULL;
     if (p[0] == '-' || end[-1] == '-') /* No leading/trailing hyphen */
         return NULL;
+    bool first = true;
     size_t n, h = 0;
     *nonascii_count = 0;
     for (n = 0; p != end && *p != '.'; n++) {
@@ -62,7 +75,10 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
                 !(charstr_char_class(codepoint) & CHARSTR_ALNUM))
                 return NULL;
             ascii[h++] = charstr_lcase_char(codepoint);
-        } else record_nonascii(codepoint, nonascii, nonascii_count);
+        } else if (first && is_mark(codepoint))
+            return NULL;
+        else record_nonascii(codepoint, nonascii, nonascii_count);
+        first = false;
     }
     *pc_count = n;
     *ascii_count = h;
@@ -145,14 +161,8 @@ static const char *punycode_encode(const char *input, const char *end,
     char *end_output = o + *output_size;
     *output_size = 0;
     if (nonascii_count) {
-        /* RFC 5891 § 4.2.3.1 */
         if (ascii_count >= 4 && charstr_case_skip_prefix(input + 2, "--"))
             return NULL;
-        /* TODO: RFC 5891 § 4.2.3.2: the first codepoint must not be a
-         * combining mark or combining character */
-        /* TODO: RFC 5892: disallowed characters */
-        /* TODO: RFC 5891 § 4.2.3.3: no context-dependent codepoints */
-        /* TODO: RFC 5891 § 4.2.3.4: bidirectionality */
         o = emit(o, end_output, output_size, 'x');
         o = emit(o, end_output, output_size, 'n');
         o = emit(o, end_output, output_size, '-');
@@ -178,34 +188,62 @@ static bool is_all_ascii(const char *s)
     return true;
 }
 
-static char *encode_nfc(const char *hostname, const char *end)
+static char *encode_filtered(const char *hostname, const char *end)
 {
     if (end - hostname > MAX_DNS_NAME_LENGTH) /* encoding won't shorten it */
         return NULL;
     const char *p = hostname;
     size_t output_size = 0;
+    char encoding[MAX_DNS_NAME_LENGTH + 1];
+    char *q = encoding;
     do {
-        size_t output_label_size = 0;
-        p = punycode_encode(p, end, NULL, &output_label_size);
+        size_t output_label_size;
+        p = punycode_encode(p, end, q, &output_label_size);
         if (!p)
             return NULL;
         output_size += output_label_size + 1;
-    } while (end - p++ > 1);    /* allow the DNS name to end in a '.' */
-    if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
-        return NULL;
-    output_size += end - p + 1; /* allow a final '.' */
-    char *encoding = fsalloc(output_size);
-    char *q = encoding;
-    p = hostname;
-    do {
-        size_t output_label_size = encoding + output_size - q;
-        p = punycode_encode(p, end, q, &output_label_size);
-        assert(p);
+        if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
+            return NULL;
         q += output_label_size;
         *q++ = '.';
-    }  while (end - p++ > 1);
+    } while (end - p++ > 1);    /* allow the DNS name to end in a '.' */
+    output_size += end - p + 1; /* allow a final '.' */
     q[end - p] = '\0';
-    return encoding;
+    return charstr_dupstr(encoding);
+}
+
+static char *safecopy(const char *src, char *dest, char *end)
+{
+    size_t size = end - dest;
+    if (!dest || strlen(src) > size)
+        return NULL;
+    memcpy(dest, src, size);
+    return dest + size;
+}
+
+static char *encode_nfc(const char *hostname, const char *end)
+{
+    const char *p = hostname;
+    char workarea[MAX_DNS_NAME_LENGTH + 1];
+    char *q = workarea;
+    char *workend = workarea + MAX_DNS_NAME_LENGTH;
+    while (p != end) {
+        int codepoint;
+        p = charstr_decode_utf8_codepoint(p, end, &codepoint);
+        if (!p)
+            return NULL;
+        if (charstr_idna_status_is_valid(codepoint) ||
+            charstr_idna_status_is_deviation(codepoint))
+            q = charstr_encode_utf8_codepoint(codepoint, q, workend);
+        else if (charstr_idna_status_is_ignored(codepoint))
+            ;
+        else if (charstr_idna_status_is_mapped(codepoint))
+            q = safecopy(charstr_idna_mapping(codepoint), q, workend);
+        else return NULL;     /* UseSTD3ASCIIRules == true */
+        if (!q)
+            return NULL;
+    }
+    return encode_filtered(workarea, q);
 }
 
 static char *encode_nfd(const char *hostname, const char *end)

@@ -113,7 +113,9 @@ char *charstr_sanitize_utf8(const char *s);
 
 /* Encode a single Unicode codepoint using UTF-8. The end of the
  * output buffer is given (NULL means unenforced). The return value is
- * the point in the output buffer after the encoding. */
+ * the point in the output buffer after the encoding. NULL is returned
+ * if s == NULL or if the whole codepoint doesn't fit in the allotted
+ * area. */
 char *charstr_encode_utf8_codepoint(int codepoint, char *s, const char *end);
 
 typedef enum {
