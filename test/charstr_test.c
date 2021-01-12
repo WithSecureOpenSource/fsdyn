@@ -213,6 +213,14 @@ static bool test_punycode_encoding(void)
         return false;
     }
     fsfree(encoding);
+    encoding = charstr_punycode_encode("ä.ö.");
+    if (!encoding)
+        return false;
+    if (strcmp(encoding, "xn--4ca.xn--nda.")) {
+        fsfree(encoding);
+        return false;
+    }
+    fsfree(encoding);
     return true;
 }
 

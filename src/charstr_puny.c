@@ -172,7 +172,8 @@ static const char *punycode_encode(const char *input, const char *end,
         o = emit(o, end_output, output_size, ascii[i]);
     if (!nonascii_count)
         return next;
-    o = emit(o, end_output, output_size, '-');
+    if (ascii_count)
+        o = emit(o, end_output, output_size, '-');
     o = punycode_encode_pass2(input, end, o, end_output, output_size,
                               ascii_count, nonascii, nonascii_count);
     if (*output_size > MAX_DNS_LABEL_LENGTH)
