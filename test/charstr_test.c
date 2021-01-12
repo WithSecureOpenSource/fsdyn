@@ -200,6 +200,7 @@ static bool test_punycode_encoding(void)
     struct {
         const char *input, *output;
     } data[] = {
+        { "你好你好", "xn--6qqa088eba" },
         { "hyvää.yötä", "xn--hyv-slaa.xn--yt-wia4e" },
         { "hyvää.yötä.", "xn--hyv-slaa.xn--yt-wia4e." },
         { "ä.ö", "xn--4ca.xn--nda" },

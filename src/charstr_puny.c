@@ -198,7 +198,7 @@ static char *encode_filtered(const char *hostname, const char *end)
     char encoding[MAX_DNS_NAME_LENGTH + 1];
     char *q = encoding;
     do {
-        size_t output_label_size;
+        size_t output_label_size = encoding + sizeof encoding - q;
         p = punycode_encode(p, end, q, &output_label_size);
         if (!p)
             return NULL;
