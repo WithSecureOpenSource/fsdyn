@@ -303,10 +303,10 @@ char *charstr_vprintf(const char *format, va_list ap)
  * NULL in case of an input error. The return value should be freed
  * using fsfree().
  *
- * Limitations:
- *  - Codepoints illegal in a DNS name may not be detected as erroneous.
- *  - Codepoints that should be remapped are not.
- */
+ * Error checking is not bulletproof. In particular, if hostname is
+ * all-ASCII, a copy of it is returned without any validation. A
+ * corollary: you can pass an IPv4 address or a bracketed or
+ * unbracketed IPv6 address as a hostname and get a copy back. */
 char *charstr_punycode_encode(const char *hostname);
 
 /* You probably don't need these functions. They are used internally
