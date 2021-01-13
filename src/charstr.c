@@ -421,6 +421,21 @@ list_t *charstr_split_atoms(const char *s)
     }
 }
 
+list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split)
+{
+    list_t *list = make_list();
+    size_t skip = strlen(delim);
+    while (max_split--) {
+        const char *p = strstr(s, delim);
+        if (!p)
+            break;
+        list_append(list, charstr_dupsubstr(s, p));
+        s = p + skip;
+    }
+    list_append(list, charstr_dupstr(s));
+    return list;
+}
+
 char *charstr_strip(const char *s)
 {
     while (*s && charstr_char_class(*s) & CHARSTR_WHITESPACE)

@@ -72,13 +72,11 @@ int main(int argc, const char *const *argv)
             const char *idna2008 = NULL;
             if (mapping)
                 idna2008 = list_pop_first(fields); /* may be NULL */
-            const char *dotdot = strstr(cp_range, "..");
-            char *first;
-            const char *last;
-            if (dotdot) {
-                first = charstr_dupsubstr(cp_range, dotdot);
-                last = dotdot + 2;
-            } else last = first = charstr_dupstr(cp_range);
+            list_t *range = charstr_split_str(cp_range, "..", -1);
+            char *first = (char *) list_pop_first(range);
+            char *last = (char *) list_pop_first(range);
+            if (!last)
+                last = charstr_dupstr(first);
             char buffer[100], *q = buffer, *end = buffer + sizeof buffer - 1;
             if (mapping) {
                 list_t *codepoints = charstr_split_atoms(mapping);
@@ -102,6 +100,8 @@ int main(int argc, const char *const *argv)
                     table[cp].idna2008 = charstr_strip(idna2008);
             }
             fsfree(first);
+            fsfree(last);
+            list_foreach(range, (void *) fsfree, NULL);
         }
         list_foreach(fields, (void *) fsfree, NULL);
         list_foreach(parts, (void *) fsfree, NULL);

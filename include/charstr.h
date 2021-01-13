@@ -89,6 +89,10 @@ unsigned charstr_split_into_array(const char *s, char delim, char **array,
  * whitespace, an empty list is returned. */
 list_t *charstr_split_atoms(const char *s);
 
+/* Like charstr_split(), but the delimiter is a string. */
+list_t *charstr_split_str(const char *s, const char *delim,
+                          unsigned max_split);
+
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
  * characters stripped. The return value should be freed with
  * fsfree(). */
