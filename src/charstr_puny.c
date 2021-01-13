@@ -14,7 +14,7 @@ enum {
     INITIAL_BIAS = 72,
     INITIAL_N = 128
 };
- 
+
 static int adapt(int delta, size_t numpoints, bool firsttime)
 {
     if (firsttime)
@@ -26,7 +26,7 @@ static int adapt(int delta, size_t numpoints, bool firsttime)
         delta /= BASE - TMIN;
     return k + (BASE - TMIN + 1) * delta / (delta + SKEW);
 }
- 
+
 static void record_nonascii(int codepoint, int nonascii[],
                             size_t *nonascii_count)
 {
@@ -180,7 +180,7 @@ static const char *punycode_encode(const char *input, const char *end,
         return NULL;
     return next;
 }
- 
+
 static bool is_all_ascii(const char *s)
 {
     while (*s)
