@@ -1,3 +1,6 @@
+#if _POSIX_C_SOURCE < 200809L
+#define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,8 +58,9 @@ static void generate_mappings()
 int main(int argc, const char *const *argv)
 {
     FILE *f = fopen(argv[1], "r");
-    char line[1000];
-    for (int ln = 0; fgets(line, sizeof line, f); ln++) {
+    char *line = NULL;
+    size_t length = 0;
+    for (int ln = 0; getline(&line, &length, f) > 0; ln++) {
         list_t *parts = charstr_split(line, '#', 1);
         const char *body = list_elem_get_value(list_get_first(parts));
         list_t *fields = charstr_split(body, ';', -1);
