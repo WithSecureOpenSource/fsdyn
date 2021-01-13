@@ -208,7 +208,7 @@ static bool test_punycode_encoding(void)
         { NULL }
     };
     for (int i; data[i].input; i++) {
-        char *encoding = charstr_punycode_encode(data[i].input);
+        char *encoding = charstr_idna_encode(data[i].input);
         if (!encoding)
             return false;
         if (strcmp(encoding, data[i].output)) {

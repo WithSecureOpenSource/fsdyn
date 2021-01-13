@@ -265,7 +265,7 @@ static char *encode_nfd(const char *hostname, const char *end)
     return encoding;
 }
 
-char *charstr_punycode_encode(const char *hostname)
+char *charstr_idna_encode(const char *hostname)
 {
     if (is_all_ascii(hostname))
         return charstr_dupstr(hostname);

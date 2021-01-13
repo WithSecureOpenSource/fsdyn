@@ -317,7 +317,7 @@ char *charstr_vprintf(const char *format, va_list ap)
  * all-ASCII, a copy of it is returned without any validation. A
  * corollary: you can pass an IPv4 address or a bracketed or
  * unbracketed IPv6 address as a hostname and get a copy back. */
-char *charstr_punycode_encode(const char *hostname);
+char *charstr_idna_encode(const char *hostname);
 
 /* You probably don't need these functions. They are used internally
  * in the punycode encoding. */
