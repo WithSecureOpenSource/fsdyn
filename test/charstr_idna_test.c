@@ -1,36 +1,69 @@
+#if _POSIX_C_SOURCE < 200809L
+#define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <fsdyn/charstr.h>
 
-static bool test_punycode_encoding(void)
+static bool test(int ln, const char *source, const char *toUnicode,
+                 const char *toAscii)
 {
-    struct {
-        const char *input, *output;
-    } data[] = {
-        { "你好你好", "xn--6qqa088eba" },
-        { "hyvää.yötä", "xn--hyv-slaa.xn--yt-wia4e" },
-        { "hyvää.yötä.", "xn--hyv-slaa.xn--yt-wia4e." },
-        { "ä.ö", "xn--4ca.xn--nda" },
-        { "Ä.Ö.", "xn--4ca.xn--nda." },
-        { NULL }
-    };
-    for (int i; data[i].input; i++) {
-        char *encoding = charstr_idna_encode(data[i].input);
-        if (!encoding)
-            return false;
-        if (strcmp(encoding, data[i].output)) {
-            fsfree(encoding);
-            return false;
-        }
-        fsfree(encoding);
+    if (!*toAscii)
+        toAscii = toUnicode;
+    if (!*toAscii)
+        toAscii = source;
+    char *result = charstr_idna_encode(source);
+    bool verdict;
+    if (result) {
+        verdict = result && !strcmp(result, toAscii);
+        if (!verdict)
+            fprintf(stderr, "  L%d: FAIL: %s ~ %s\n", ln, source, toAscii);
     }
-    return true;
+    else {
+        fprintf(stderr, "  L%d: strict: %s ~ %s\n", ln, source, toAscii);
+        verdict = true;        /* It's ok to be strict */
+    }
+    fsfree(result);
+    return verdict;
 }
 
-int main()
+int main(int argc, const char *const *argv)
 {
-    if (!test_punycode_encoding())
+    FILE *f = fopen(argv[1], "r");
+    char *line = NULL;
+    size_t length = 0;
+    bool ok = true;
+    for (int ln = 1; ok && getline(&line, &length, f) > 0; ln++) {
+        list_t *parts = charstr_split(line, '#', 1);
+        const char *body = list_elem_get_value(list_get_first(parts));
+        list_t *fields = charstr_split(body, ';', -1);
+        char *source = charstr_stripped((char *) list_pop_first(fields));
+        char *toUnicode = charstr_stripped((char *) list_pop_first(fields));
+        char *toUnicodeStatus =
+            charstr_stripped((char *) list_pop_first(fields));
+        char *toAsciiN = charstr_stripped((char *) list_pop_first(fields));
+        char *toAsciiNStatus =
+            charstr_stripped((char *) list_pop_first(fields));
+        char *toAsciiT = charstr_stripped((char *) list_pop_first(fields));
+        char *toAsciiTStatus =
+            charstr_stripped((char *) list_pop_first(fields));
+        if (source && toUnicode && toAsciiN) {
+            ok = test(ln, source, toUnicode, toAsciiN);
+            if (!ok)
+                fprintf(stderr, "%s: line %d failed\n", argv[0], ln);
+        }
+        fsfree(source);
+        fsfree(toUnicode);
+        fsfree(toUnicodeStatus);
+        fsfree(toAsciiN);
+        fsfree(toAsciiNStatus);
+        fsfree(toAsciiT);
+        fsfree(toAsciiTStatus);
+        list_foreach(fields, (void *) fsfree, NULL);
+        list_foreach(parts, (void *) fsfree, NULL);
+    }
+    if (!ok)
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
     return EXIT_SUCCESS;

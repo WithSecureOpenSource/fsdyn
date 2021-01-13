@@ -438,12 +438,30 @@ list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split)
 
 char *charstr_strip(const char *s)
 {
+    if (!s)
+        return NULL;
     while (*s && charstr_char_class(*s) & CHARSTR_WHITESPACE)
         s++;
     const char *end = s + strlen(s);
     while (end > s && charstr_char_class(end[-1]) & CHARSTR_WHITESPACE)
         end--;
     return charstr_dupsubstr(s, end);
+}
+
+char *charstr_stripped(char *s)
+{
+    char *stripped = charstr_strip(s);
+    fsfree(s);
+    return stripped;
+}
+
+bool charstr_is_blank(const char *s, const char *end)
+{
+    if (s)
+        for (; s != end && *s; s++)
+            if (!(charstr_char_class(*s++) & CHARSTR_WHITESPACE))
+                return false;
+    return true;
 }
 
 static bool valid_unicode(int codepoint)

@@ -40,16 +40,11 @@ static void record_nonascii(int codepoint, int nonascii[],
     *nonascii_count = c + 1;
 }
 
-static bool is_mark(int codepoint)
+static char *fail(const char *reason)
 {
-    switch (charstr_unicode_category(codepoint)) {
-        case UNICODE_CATEGORY_Mc:
-        case UNICODE_CATEGORY_Me:
-        case UNICODE_CATEGORY_Mn:
-            return true;
-        default:
-            return false;
-    }
+    /* An auxiliary function to help in troubleshooting. Set your
+     * breakpoint here. */
+    return NULL;
 }
 
 static const char *punycode_encode_pass1(const char *p, const char *end,
@@ -58,10 +53,12 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
                                          int nonascii[],
                                          size_t *nonascii_count)
 {
-    if (p == end)               /* disallow an empty label */
-        return NULL;
-    if (p[0] == '-' || end[-1] == '-') /* No leading/trailing hyphen */
-        return NULL;
+    if (p == end)
+        return fail("label is empty");
+    if (p[0] == '-')
+        return fail("label begins with hyphen");
+    if (end[-1] == '-')
+        return fail("label ends with hyphen");
     bool first = true;
     size_t n, h = 0;
     *nonascii_count = 0;
@@ -69,14 +66,15 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
         int codepoint;
         p = charstr_decode_utf8_codepoint(p, end, &codepoint);
         if (!p)
-            return NULL;
+            return fail("bad UTF-8 in pass1");
         if (codepoint < 128) {
             if (codepoint != '-' &&
                 !(charstr_char_class(codepoint) & CHARSTR_ALNUM))
-                return NULL;
+                return fail("disallowed ASCII");
             ascii[h++] = charstr_lcase_char(codepoint);
-        } else if (first && is_mark(codepoint))
-            return NULL;
+        } else if (first &&
+                   charstr_unicode_category(codepoint) == UNICODE_CATEGORY_Mc)
+            return fail("label begins with composing mark");
         else record_nonascii(codepoint, nonascii, nonascii_count);
         first = false;
     }
@@ -162,7 +160,7 @@ static const char *punycode_encode(const char *input, const char *end,
     *output_size = 0;
     if (nonascii_count) {
         if (ascii_count >= 4 && charstr_case_skip_prefix(input + 2, "--"))
-            return NULL;
+            return fail("nonascii label begins with ACE");
         o = emit(o, end_output, output_size, 'x');
         o = emit(o, end_output, output_size, 'n');
         o = emit(o, end_output, output_size, '-');
@@ -177,7 +175,7 @@ static const char *punycode_encode(const char *input, const char *end,
     o = punycode_encode_pass2(input, end, o, end_output, output_size,
                               ascii_count, nonascii, nonascii_count);
     if (*output_size > MAX_DNS_LABEL_LENGTH)
-        return NULL;
+        return fail("label too long");
     return next;
 }
 
@@ -192,7 +190,7 @@ static bool is_all_ascii(const char *s)
 static char *encode_filtered(const char *hostname, const char *end)
 {
     if (end - hostname > MAX_DNS_NAME_LENGTH) /* encoding won't shorten it */
-        return NULL;
+        return fail("hostname too long");
     const char *p = hostname;
     size_t output_size = 0;
     char encoding[MAX_DNS_NAME_LENGTH + 1];
@@ -204,7 +202,7 @@ static char *encode_filtered(const char *hostname, const char *end)
             return NULL;
         output_size += output_label_size + 1;
         if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
-            return NULL;
+            return fail("hostname encoding too long");
         q += output_label_size;
         *q++ = '.';
     } while (end - p++ > 1);    /* allow the DNS name to end in a '.' */
@@ -218,7 +216,7 @@ static char *safecopy(const char *src, char *dest, char *end)
     size_t capacity = end - dest;
     size_t size = strlen(src);
     if (!dest || size > capacity)
-        return NULL;
+        return NULL;;
     memcpy(dest, src, size);
     return dest + size;
 }
@@ -233,7 +231,7 @@ static char *encode_nfc(const char *hostname, const char *end)
         int codepoint;
         p = charstr_decode_utf8_codepoint(p, end, &codepoint);
         if (!p)
-            return NULL;
+            return fail("bad UTF-8 in NFC");
         if (charstr_idna_status_is_valid(codepoint) ||
             charstr_idna_status_is_deviation(codepoint))
             q = charstr_encode_utf8_codepoint(codepoint, q, workend);
@@ -241,9 +239,11 @@ static char *encode_nfc(const char *hostname, const char *end)
             ;
         else if (charstr_idna_status_is_mapped(codepoint))
             q = safecopy(charstr_idna_mapping(codepoint), q, workend);
-        else return NULL;     /* UseSTD3ASCIIRules == true */
+        else
+            /* UseSTD3ASCIIRules == true */
+            return fail("disallowed codepoint");
         if (!q)
-            return NULL;
+            return fail("buffer overflow");
     }
     /* TODO: https://unicode.org/reports/tr46/#Processing
      * CheckBidi & CheckJoiners */
@@ -254,11 +254,11 @@ static char *encode_nfd(const char *hostname, const char *end)
 {
     size_t worklen = end - hostname; /* recomposing won't grow it */
     char *workarea = fsalloc(worklen + 1);
-    char *workend =
-        charstr_unicode_recompose(hostname, end, workarea, workend);
+    char *workend = workarea + worklen;
+    workend = charstr_unicode_recompose(hostname, end, workarea, workend + 1);
     if (!workend) {
         fsfree(workarea);
-        return NULL;
+        return fail("failed to recompose");
     }
     char *encoding = encode_nfc(workarea, workend);
     fsfree(workarea);
@@ -268,7 +268,7 @@ static char *encode_nfd(const char *hostname, const char *end)
 char *charstr_idna_encode(const char *hostname)
 {
     if (is_all_ascii(hostname))
-        return charstr_dupstr(hostname);
+        return charstr_lcase_str(charstr_dupstr(hostname));
     size_t length = strlen(hostname);
     const char *end = hostname + length;
     if (charstr_unicode_canonically_composed(hostname, end))
@@ -277,13 +277,33 @@ char *charstr_idna_encode(const char *hostname)
         return encode_nfd(hostname, end);
     size_t worklen = 3 * length; /* should be enough for decomposing */
     char *workarea = fsalloc(worklen + 1);
-    char *workend =
-        charstr_unicode_decompose(hostname, end, workarea, workend);
+    char *workend = workarea + worklen;
+    workend = charstr_unicode_decompose(hostname, end, workarea, workend);
     if (!workend) {
         fsfree(workarea);
-        return NULL;
+        return fail("failed to decompose");
     }
     char *encoding = encode_nfd(workarea, workend);
     fsfree(workarea);
     return encoding;
 }
+
+const char *charstr_idna_status(int codepoint)
+{
+    if (charstr_idna_status_is_valid(codepoint))
+        return "valid";
+    if (charstr_idna_status_is_mapped(codepoint))
+        return "mapped";
+    if (charstr_idna_status_is_ignored(codepoint))
+        return "ignored";
+    if (charstr_idna_status_is_deviation(codepoint))
+        return "deviation";
+    if (charstr_idna_status_is_disallowed(codepoint))
+        return "disallowed";
+    if (charstr_idna_status_is_disallowed_STD3_valid(codepoint))
+        return "disallowed_STD3_valid";
+    if (charstr_idna_status_is_disallowed_STD3_mapped(codepoint))
+        return "disallowed_STD3_mapped";
+    return "?";
+}
+

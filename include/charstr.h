@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <regex.h>
 #include "fsalloc.h"
 #include "list.h"
 
@@ -93,10 +94,24 @@ list_t *charstr_split_atoms(const char *s);
 list_t *charstr_split_str(const char *s, const char *delim,
                           unsigned max_split);
 
+/* Like charstr_split(), but the delimiter is a (precompiled) regular
+ * expression. */
+list_t *charstr_split_re(const char *s, const regex_t *delim, int eflags,
+                         unsigned max_split);
+
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
  * characters stripped. The return value should be freed with
- * fsfree(). */
+ * fsfree(). If s == NULL, NULL is returned. */
 char *charstr_strip(const char *s);
+
+/* Make a stripped copy of s and return it. As a side effect, s is
+ * freed with fsfree(). If s == NULL, NULL is returned. */
+char *charstr_stripped(char *s);
+
+/* Return true if s == NULL or the string up until end consists of
+ * CHARSTR_WHITESPACE only or NUL is encountered first. Specify end =
+ * NULL to test the whole string. */
+bool charstr_is_blank(const char *s, const char *end);
 
 /* Decode a single UTF-8-encode Unicode codepoint. The encoding begins
  * at s and is limited by end (which is the end of the buffer, not the
@@ -222,7 +237,8 @@ bool charstr_unicode_canonically_decomposed(const char *s, const char *end);
  * guarantee sufficient space.
  *
  * A non-NULL return value indicates the end of the generated UTF-8
- * output. The output is NUL-terminated.
+ * output. The output is NUL-terminated. In other words, a non-NULL
+ * return value points to the NUL-termination.
  *
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
@@ -240,7 +256,8 @@ char *charstr_unicode_decompose(const char *s, const char *end,
  * space.
  *
  * A non-NULL return value indicates the end of the generated UTF-8
- * output. The output is NUL-terminated.
+ * output. The output is NUL-terminated. In other words, a non-NULL
+ * return value points to the NUL-termination.
  *
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
@@ -318,9 +335,9 @@ char *charstr_vprintf(const char *format, va_list ap)
  * using fsfree().
  *
  * Error checking is not bulletproof. In particular, if hostname is
- * all-ASCII, a copy of it is returned without any validation. A
- * corollary: you can pass an IPv4 address or a bracketed or
- * unbracketed IPv6 address as a hostname and get a copy back. */
+ * all-ASCII, no validation is performed. A corollary: you can pass an
+ * IPv4 address or a bracketed or unbracketed IPv6 address as a
+ * hostname and get a copy back. */
 char *charstr_idna_encode(const char *hostname);
 
 /* You probably don't need these functions. They are used internally
@@ -332,6 +349,7 @@ bool charstr_idna_status_is_disallowed_STD3_mapped(int codepoint);
 bool charstr_idna_status_is_ignored(int codepoint);
 bool charstr_idna_status_is_mapped(int codepoint);
 bool charstr_idna_status_is_valid(int codepoint);
+const char *charstr_idna_status(int codepoint);
 
 /* You probably don't need this functions. It is used internally in
  * the punycode encoding. The return value is an UTF-8 string or

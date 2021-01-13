@@ -60,7 +60,7 @@ int main(int argc, const char *const *argv)
     FILE *f = fopen(argv[1], "r");
     char *line = NULL;
     size_t length = 0;
-    for (int ln = 0; getline(&line, &length, f) > 0; ln++) {
+    while (getline(&line, &length, f) > 0) {
         list_t *parts = charstr_split(line, '#', 1);
         const char *body = list_elem_get_value(list_get_first(parts));
         list_t *fields = charstr_split(body, ';', -1);
