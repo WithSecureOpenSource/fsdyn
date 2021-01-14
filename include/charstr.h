@@ -336,7 +336,7 @@ bool charstr_idna_status_is_mapped(int codepoint);
 bool charstr_idna_status_is_valid(int codepoint);
 const char *charstr_idna_status(int codepoint);
 
-/* You probably don't need these functions. It is used internally in
+/* You probably don't need this function. It is used internally in
  * the punycode encoding. The return value is an UTF-8 string or
  * NULL. */
 const char *charstr_idna_mapping(int codepoint);
