@@ -84,6 +84,20 @@ list_t *charstr_split(const char *s, char delim, unsigned max_split);
 unsigned charstr_split_into_array(const char *s, char delim, char **array,
                                   unsigned max_split);
 
+/* Return a fresh list of strings split at any nonempty sequence of
+ * CHARSTR_WHITESPACE characters. If the argument only contains
+ * whitespace, an empty list is returned. */
+list_t *charstr_split_atoms(const char *s);
+
+/* Like charstr_split(), but the delimiter is a string. */
+list_t *charstr_split_str(const char *s, const char *delim,
+                          unsigned max_split);
+
+/* Return a copy of s with initial and final CHARSTR_WHITESPACE
+ * characters stripped. The return value should be freed with
+ * fsfree(). If s == NULL, NULL is returned. */
+char *charstr_strip(const char *s);
+
 /* Decode a single UTF-8-encode Unicode codepoint. The encoding begins
  * at s and is limited by end (which is the end of the buffer, not the
  * end of the codepoint encoding). If s is NULL, return NULL. If end is
@@ -113,7 +127,9 @@ char *charstr_sanitize_utf8(const char *s);
 
 /* Encode a single Unicode codepoint using UTF-8. The end of the
  * output buffer is given (NULL means unenforced). The return value is
- * the point in the output buffer after the encoding. */
+ * the point in the output buffer after the encoding. NULL is returned
+ * if s == NULL or if the whole codepoint doesn't fit in the allotted
+ * area. */
 char *charstr_encode_utf8_codepoint(int codepoint, char *s, const char *end);
 
 typedef enum {
@@ -206,7 +222,8 @@ bool charstr_unicode_canonically_decomposed(const char *s, const char *end);
  * guarantee sufficient space.
  *
  * A non-NULL return value indicates the end of the generated UTF-8
- * output. The output is NUL-terminated.
+ * output. The output is NUL-terminated. In other words, a non-NULL
+ * return value points to the NUL-termination.
  *
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
@@ -224,7 +241,8 @@ char *charstr_unicode_decompose(const char *s, const char *end,
  * space.
  *
  * A non-NULL return value indicates the end of the generated UTF-8
- * output. The output is NUL-terminated.
+ * output. The output is NUL-terminated. In other words, a non-NULL
+ * return value points to the NUL-termination.
  *
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
@@ -296,6 +314,32 @@ char *charstr_printf(const char *format, ...)
 char *charstr_vprintf(const char *format, va_list ap)
     __attribute__((format(printf, 1, 0)));
 
+/* Encode the hostname using punycode. The argument must be valid
+ * UTF-8 and also a valid Unicode hostname. Return an ASCII string or
+ * NULL in case of an input error. The return value should be freed
+ * using fsfree().
+ *
+ * Error checking is not bulletproof. In particular, if hostname is
+ * all-ASCII, no validation is performed. A corollary: you can pass an
+ * IPv4 address or a bracketed or unbracketed IPv6 address as a
+ * hostname and get a copy back. */
+char *charstr_idna_encode(const char *hostname);
+
+/* You probably don't need these functions. They are used internally
+ * in the punycode encoding. */
+bool charstr_idna_status_is_deviation(int codepoint);
+bool charstr_idna_status_is_disallowed(int codepoint);
+bool charstr_idna_status_is_disallowed_STD3_valid(int codepoint);
+bool charstr_idna_status_is_disallowed_STD3_mapped(int codepoint);
+bool charstr_idna_status_is_ignored(int codepoint);
+bool charstr_idna_status_is_mapped(int codepoint);
+bool charstr_idna_status_is_valid(int codepoint);
+const char *charstr_idna_status(int codepoint);
+
+/* You probably don't need this function. It is used internally in
+ * the punycode encoding. The return value is an UTF-8 string or
+ * NULL. */
+const char *charstr_idna_mapping(int codepoint);
 
 #ifdef __cplusplus
 }

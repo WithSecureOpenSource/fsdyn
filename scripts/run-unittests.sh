@@ -56,6 +56,8 @@ run-tests () {
     run-test $arch stage/$arch/build/test/intset_test &&
     run-test $arch stage/$arch/build/test/charstr_normalization_test \
          unicode/NormalizationTest.txt &&
+    run-test $arch stage/$arch/build/test/charstr_idna_test \
+         idna/IdnaTestV2.txt &&
     run-test $arch stage/$arch/build/test/charstr_test &&
     run-test $arch stage/$arch/build/test/base64_test &&
     run-test $arch stage/$arch/build/test/date_test &&

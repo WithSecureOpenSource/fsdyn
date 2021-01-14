@@ -10,6 +10,7 @@ env.Program('avltest.c',
 env.Program('base64_test.c')
 env.Program('bytearray_test.c')
 env.Program('charstr_normalization_test.c')
+env.Program('charstr_idna_test.c')
 env.Program('charstr_test.c')
 env.Program('date_test.c')
 env.Program('float_test.c')
