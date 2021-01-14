@@ -198,6 +198,7 @@ static char *encode_filtered(const char *hostname, const char *end)
         p = punycode_encode(p, end, q, &output_label_size);
         if (!p)
             return NULL;
+        assert(output_label_size <= MAX_DNS_LABEL_LENGTH);
         output_size += output_label_size + 1;
         if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
             return fail("hostname encoding too long");
