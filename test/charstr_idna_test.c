@@ -65,8 +65,11 @@ int main(int argc, const char *const *argv)
         fsfree(toAsciiT);
         fsfree(toAsciiTStatus);
         list_foreach(fields, (void *) fsfree, NULL);
+        destroy_list(fields);
         list_foreach(parts, (void *) fsfree, NULL);
+        destroy_list(parts);
     }
+    free(line);
     if (!ok)
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
