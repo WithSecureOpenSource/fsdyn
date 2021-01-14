@@ -159,8 +159,6 @@ static const char *punycode_encode(const char *input, const char *end,
     char *end_output = o + *output_size;
     *output_size = 0;
     if (nonascii_count) {
-        if (ascii_count >= 4 && charstr_case_skip_prefix(input + 2, "--"))
-            return fail("nonascii label begins with ACE");
         o = emit(o, end_output, output_size, 'x');
         o = emit(o, end_output, output_size, 'n');
         o = emit(o, end_output, output_size, '-');
