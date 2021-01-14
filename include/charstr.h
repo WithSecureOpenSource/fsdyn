@@ -104,15 +104,6 @@ list_t *charstr_split_re(const char *s, const regex_t *delim, int eflags,
  * fsfree(). If s == NULL, NULL is returned. */
 char *charstr_strip(const char *s);
 
-/* Make a stripped copy of s and return it. As a side effect, s is
- * freed with fsfree(). If s == NULL, NULL is returned. */
-char *charstr_stripped(char *s);
-
-/* Return true if s == NULL or the string up until end consists of
- * CHARSTR_WHITESPACE only or NUL is encountered first. Specify end =
- * NULL to test the whole string. */
-bool charstr_is_blank(const char *s, const char *end);
-
 /* Decode a single UTF-8-encode Unicode codepoint. The encoding begins
  * at s and is limited by end (which is the end of the buffer, not the
  * end of the codepoint encoding). If s is NULL, return NULL. If end is

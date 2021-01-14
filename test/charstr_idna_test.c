@@ -28,6 +28,13 @@ static bool test(int ln, const char *source, const char *toUnicode,
     return verdict;
 }
 
+static char *stripped(char *s)
+{
+    char *stripped = charstr_strip(s);
+    fsfree(s);
+    return stripped;
+}
+
 int main(int argc, const char *const *argv)
 {
     FILE *f = fopen(argv[1], "r");
@@ -38,16 +45,13 @@ int main(int argc, const char *const *argv)
         list_t *parts = charstr_split(line, '#', 1);
         const char *body = list_elem_get_value(list_get_first(parts));
         list_t *fields = charstr_split(body, ';', -1);
-        char *source = charstr_stripped((char *) list_pop_first(fields));
-        char *toUnicode = charstr_stripped((char *) list_pop_first(fields));
-        char *toUnicodeStatus =
-            charstr_stripped((char *) list_pop_first(fields));
-        char *toAsciiN = charstr_stripped((char *) list_pop_first(fields));
-        char *toAsciiNStatus =
-            charstr_stripped((char *) list_pop_first(fields));
-        char *toAsciiT = charstr_stripped((char *) list_pop_first(fields));
-        char *toAsciiTStatus =
-            charstr_stripped((char *) list_pop_first(fields));
+        char *source = stripped((char *) list_pop_first(fields));
+        char *toUnicode = stripped((char *) list_pop_first(fields));
+        char *toUnicodeStatus = stripped((char *) list_pop_first(fields));
+        char *toAsciiN = stripped((char *) list_pop_first(fields));
+        char *toAsciiNStatus = stripped((char *) list_pop_first(fields));
+        char *toAsciiT = stripped((char *) list_pop_first(fields));
+        char *toAsciiTStatus = stripped((char *) list_pop_first(fields));
         if (source && toUnicode && toAsciiN) {
             ok = test(ln, source, toUnicode, toAsciiN);
             if (!ok)

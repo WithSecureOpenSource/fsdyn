@@ -448,22 +448,6 @@ char *charstr_strip(const char *s)
     return charstr_dupsubstr(s, end);
 }
 
-char *charstr_stripped(char *s)
-{
-    char *stripped = charstr_strip(s);
-    fsfree(s);
-    return stripped;
-}
-
-bool charstr_is_blank(const char *s, const char *end)
-{
-    if (s)
-        for (; s != end && *s; s++)
-            if (!(charstr_char_class(*s++) & CHARSTR_WHITESPACE))
-                return false;
-    return true;
-}
-
 static bool valid_unicode(int codepoint)
 {
     return (codepoint >= 0 && codepoint <= 0xd7ff) ||
