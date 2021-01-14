@@ -94,11 +94,6 @@ list_t *charstr_split_atoms(const char *s);
 list_t *charstr_split_str(const char *s, const char *delim,
                           unsigned max_split);
 
-/* Like charstr_split(), but the delimiter is a (precompiled) regular
- * expression. */
-list_t *charstr_split_re(const char *s, const regex_t *delim, int eflags,
-                         unsigned max_split);
-
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
  * characters stripped. The return value should be freed with
  * fsfree(). If s == NULL, NULL is returned. */
