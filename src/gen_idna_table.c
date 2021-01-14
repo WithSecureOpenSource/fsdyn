@@ -64,14 +64,14 @@ int main(int argc, const char *const *argv)
         list_t *parts = charstr_split(line, '#', 1);
         const char *body = list_elem_get_value(list_get_first(parts));
         list_t *fields = charstr_split(body, ';', -1);
-        const char *cp_range = list_pop_first(fields);
+        char *cp_range = (char *) list_pop_first(fields);
         assert(cp_range);
-        const char *status = list_pop_first(fields);
+        char *status = (char *) list_pop_first(fields);
         if (status) {
-            const char *mapping = list_pop_first(fields);
-            const char *idna2008 = NULL;
+            char *mapping = (char *) list_pop_first(fields);
+            char *idna2008 = NULL;
             if (mapping)
-                idna2008 = list_pop_first(fields); /* may be NULL */
+                idna2008 = (char *) list_pop_first(fields); /* may be NULL */
             list_t *range = charstr_split_str(cp_range, "..", -1);
             char *first = (char *) list_pop_first(range);
             char *last = (char *) list_pop_first(range);
@@ -88,6 +88,7 @@ int main(int argc, const char *const *argv)
                 }
                 *q++ = '\0';
                 list_foreach(codepoints, (void *) fsfree, NULL);
+                destroy_list(codepoints);
             }
             int start = strtol(first, NULL, 16);
             int finish = strtol(last, NULL, 16);
@@ -102,10 +103,18 @@ int main(int argc, const char *const *argv)
             fsfree(first);
             fsfree(last);
             list_foreach(range, (void *) fsfree, NULL);
+            destroy_list(range);
+            fsfree(idna2008);
+            fsfree(mapping);
+            fsfree(status);
         }
+        fsfree(cp_range);
         list_foreach(fields, (void *) fsfree, NULL);
+        destroy_list(fields);
         list_foreach(parts, (void *) fsfree, NULL);
+        destroy_list(parts);
     }
+    free(line);
     for (int cp = 0; cp < N_CP; cp++)
         assert(table[cp].status);
     printf("#include <stddef.h>\n"
