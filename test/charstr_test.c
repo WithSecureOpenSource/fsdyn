@@ -195,6 +195,24 @@ static bool test_url_encoding(void)
     return result;
 }
 
+static bool test_upper_lower(void)
+{
+    static const char *upcase_string = "ÖISET HÄIRIÖT — ŠOKKIKO?";
+    static const char *downcase_string = "öiset häiriöt — šokkiko?";
+    const char *p = upcase_string;
+    const char *q = downcase_string;
+    while (*p && *q) {
+        int up, down;
+        p = charstr_decode_utf8_codepoint(p, NULL, &up);
+        q = charstr_decode_utf8_codepoint(q, NULL, &down);
+        if (down != charstr_naive_lcase_unicode(up))
+            return false;
+        if (up != charstr_naive_ucase_unicode(down))
+            return false;
+    }
+    return !*p && !*q;
+}
+
 int main()
 {
     if (!test_decode_utf8_codepoint())
@@ -212,6 +230,8 @@ int main()
     if (!test_sanitization())
         return EXIT_FAILURE;
     if (!test_url_encoding())
+        return EXIT_FAILURE;
+    if (!test_upper_lower())
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
     return EXIT_SUCCESS;
