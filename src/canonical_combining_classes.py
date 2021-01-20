@@ -3,9 +3,11 @@
 import sys
 
 def main():
-    sys.stdout.write("""#include "stdint.h"
+    sys.stdout.write(r"""#include "charstr.h"
 
-const uint8_t _charstr_unicode_canonical_combining_class[0x110000] = {
+int charstr_unicode_canonical_combining_class(int codepoint)
+{
+    switch (codepoint) {
 """)
     prev_cp = -1
     range_start = None
@@ -21,12 +23,13 @@ const uint8_t _charstr_unicode_canonical_combining_class[0x110000] = {
             filler = "Cn"
             if descr.endswith(", First>"):
                 range_start = category
-        for _ in range(prev_cp + 1, codepoint):
-            sys.stdout.write("    0,\n")
-        sys.stdout.write("    %d,\n" % int(line.split(";")[3]))
+        sys.stdout.write("        case %d: return %d;\n" % (
+            codepoint, int(line.split(";")[3])))
         prev_cp = codepoint
     assert range_start is None
-    sys.stdout.write("""};\n
+    sys.stdout.write(r"""        default: return 0;
+    }
+}
 """)
 
 if __name__ == '__main__':
