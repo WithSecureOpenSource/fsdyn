@@ -4,12 +4,6 @@
 #include "charstr.h"
 #include "fsdyn_version.h"
 
-charstr_unicode_category_t charstr_unicode_category(int codepoint)
-{
-    extern const uint8_t _charstr_unicode_categories[0x110000];
-    return _charstr_unicode_categories[codepoint];
-}
-
 int charstr_detect_unicode_normal_form(const char *s, const char *end,
                                        int disallowed_flag, int maybe_flag)
 {
