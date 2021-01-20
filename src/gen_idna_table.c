@@ -37,22 +37,80 @@ static void generate_test(const char *status)
            "}\n");
 }
 
+static void generate_set(const char *status)
+{
+    int max_on = -1;
+    for (int cp = 0; cp < N_CP; cp++)
+        if (!strcmp(table[cp].status, status))
+            max_on = cp;
+    int set_size = (max_on + 63) / 64;
+    printf("\n"
+           "static const uint64_t set_%s[%d] = {",
+           status, set_size);
+    uint64_t *set = fscalloc(set_size, sizeof set[0]);
+    for (int cp = 0; cp < max_on; cp++)
+        if (!strcmp(table[cp].status, status))
+            set[cp / 64] |= (uint64_t) 1 << cp % 64;
+    for (int i = 0; i < set_size - 1; i++) {
+        if (i % 4 == 0)
+            printf("\n    ");
+        printf("0x%016llx, ", (unsigned long long) set[i]);
+    }
+    if ((set_size - 1) % 4 == 0)
+        printf("\n    ");
+    printf("0x%016llx };\n"
+           "\n"
+           "bool charstr_idna_status_is_%s(int codepoint)\n"
+           "{\n"
+           "    if (codepoint > %d)\n"
+           "         return false;\n"
+           "    return (set_%s[codepoint / 64] &"
+                " (uint64_t) 1 << codepoint % 64) != 0;\n"
+           "}\n",
+           (unsigned long long) set[set_size - 1], status, max_on, status);
+    fsfree(set);
+}
+
 static void generate_mappings()
 {
-    printf("\n"
-           "const char *charstr_idna_mapping(int codepoint)\n"
-           "{\n"
-           "    switch (codepoint) {\n");
+    int count = 0, min_cp = -1, max_cp;
     for (int cp = 0; cp < N_CP; cp++)
         if (table[cp].mapping && *table[cp].mapping) {
-            printf("        case %d: return \"", cp);
+            if (min_cp == -1)
+                min_cp = cp;
+            max_cp = cp;
+            count++;
+        }
+    printf("\n"
+           "static struct {\n"
+           "    int from;\n"
+           "    const char *to;\n"
+           "} const idna_mappings[%d] = {\n", count);
+    for (int cp = 0; cp < N_CP; cp++)
+        if (table[cp].mapping && *table[cp].mapping) {
+            printf("    { %d, \"", cp);
             for (const char *p = table[cp].mapping; *p; p++)
                 printf("\\%o", *p & 0xff);
-            printf("\";\n");
+            printf("\" },\n");
         }
-    printf("        default: return NULL;\n"
+    printf("};\n"
+           "\n"
+           "const char *charstr_idna_mapping(int codepoint)\n"
+           "{\n"
+           "    if (codepoint < %d || codepoint > %d)\n"
+           "        return NULL;\n"
+           "    int low = 0, high = %d;\n"
+           "    while (low < high) {\n"
+           "        int middle = (4 * low + high) / 5;\n" /* heuristic low bias */
+           "        int from = idna_mappings[middle].from;\n"
+           "        if (from < codepoint)\n"
+           "            low = middle + 1;\n"
+           "        else high = middle;\n"
            "    }\n"
-           "}\n");
+           "    if (idna_mappings[high].from != codepoint)\n"
+           "        return NULL;\n"
+           "    return idna_mappings[high].to;\n"
+           "}\n", min_cp, max_cp, count - 1);
 }
 
 int main(int argc, const char *const *argv)
@@ -118,14 +176,16 @@ int main(int argc, const char *const *argv)
     for (int cp = 0; cp < N_CP; cp++)
         assert(table[cp].status);
     printf("#include <stddef.h>\n"
-           "#include <stdbool.h>\n");
+           "#include <stdint.h>\n"
+           "#include <stdbool.h>\n"
+           "#include \"fsalloc.h\"\n");
     generate_test("deviation");
     generate_test("disallowed");
     generate_test("disallowed_STD3_valid");
     generate_test("disallowed_STD3_mapped");
     generate_test("ignored");
-    generate_test("mapped");
-    generate_test("valid");
+    generate_set("mapped"); /* about the same as generate_test() but probably faster */
+    generate_set("valid"); /* 20 kB smaller than generate_test() and probably faster */
     generate_mappings();
     return EXIT_SUCCESS;
 }
