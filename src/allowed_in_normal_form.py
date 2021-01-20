@@ -34,11 +34,13 @@ def main():
         qc_value = qc_value.strip()
         for cp in range(cp_low, cp_high + 1):
             qc[cp][qc_type] = qc_value
-    sys.stdout.write("""#include "charstr.h"
+    sys.stdout.write(r"""#include "charstr.h"
 
-const uint8_t _charstr_allowed_unicode_normal_forms[0x110000] = {
+int charstr_allowed_unicode_normal_forms(int codepoint)
+{
+    switch (codepoint) {
 """)
-    for record in qc:
+    for codepoint, record in enumerate(qc):
         disj = []
         for form in [ "NFC", "NFD", "NFKC", "NFKD" ]:
             value = record["%s_QC" % form]
@@ -49,12 +51,11 @@ const uint8_t _charstr_allowed_unicode_normal_forms[0x110000] = {
             else:
                 assert value == "Y"
         if disj:
-            sys.stdout.write("""    %s,
-""" % " | ".join(disj))
-        else:
-            sys.stdout.write("""    0,
-""")
-    sys.stdout.write("""};\n
+            sys.stdout.write("        case %d: return %s;\n" % (
+                codepoint, " | ".join(disj)))
+    sys.stdout.write(r"""        default: return 0;
+    }
+}
 """)
 
 if __name__ == '__main__':

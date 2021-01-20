@@ -10,18 +10,6 @@ charstr_unicode_category_t charstr_unicode_category(int codepoint)
     return _charstr_unicode_categories[codepoint];
 }
 
-int charstr_allowed_unicode_normal_forms(int codepoint)
-{
-    extern const uint8_t _charstr_allowed_unicode_normal_forms[0x110000];
-    return _charstr_allowed_unicode_normal_forms[codepoint];
-}
-
-int charstr_unicode_canonical_combining_class(int codepoint)
-{
-    extern const uint8_t _charstr_unicode_canonical_combining_class[0x110000];
-    return _charstr_unicode_canonical_combining_class[codepoint];
-}
-
 int charstr_detect_unicode_normal_form(const char *s, const char *end,
                                        int disallowed_flag, int maybe_flag)
 {

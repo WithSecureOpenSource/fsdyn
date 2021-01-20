@@ -3,7 +3,9 @@
 import sys
 
 def main():
-    sys.stdout.write(r"""int charstr_naive_lcase_unicode(int codepoint)
+    sys.stdout.write(r"""#include "charstr.h"
+
+int charstr_naive_lcase_unicode(int codepoint)
 {
     switch (codepoint) {
 """)
