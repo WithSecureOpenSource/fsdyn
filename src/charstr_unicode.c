@@ -10,18 +10,6 @@ charstr_unicode_category_t charstr_unicode_category(int codepoint)
     return _charstr_unicode_categories[codepoint];
 }
 
-int charstr_naive_lcase_unicode(int codepoint)
-{
-    extern const uint8_t _charstr_unicode_lower_case[0x110000];
-    return _charstr_unicode_lower_case[codepoint];
-}
-
-int charstr_naive_ucase_unicode(int codepoint)
-{
-    extern const uint8_t _charstr_unicode_upper_case[0x110000];
-    return _charstr_unicode_upper_case[codepoint];
-}
-
 int charstr_allowed_unicode_normal_forms(int codepoint)
 {
     extern const uint8_t _charstr_allowed_unicode_normal_forms[0x110000];

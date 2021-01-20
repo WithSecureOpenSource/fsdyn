@@ -3,9 +3,9 @@
 import sys
 
 def main():
-    sys.stdout.write("""#include <stdint.h>
-
-const uint32_t _charstr_unicode_lower_case[0x110000] = {
+    sys.stdout.write(r"""int charstr_naive_lcase_unicode(int codepoint)
+{
+    switch (codepoint) {
 """)
     prev_cp = -1
     range_start = None
@@ -21,18 +21,18 @@ const uint32_t _charstr_unicode_lower_case[0x110000] = {
             filler = "Cn"
             if descr.endswith(", First>"):
                 range_start = category
-        for _ in range(prev_cp + 1, codepoint):
-            sys.stdout.write("    %d,\n" % codepoint)
         if category == "Lu":
             try:
-                sys.stdout.write("    %d,\n" % int(line.split(";")[13], 16))
+                sys.stdout.write(
+                    "        case %d: return %d;\n" % (
+                        codepoint, int(line.split(";")[13], 16)))
             except ValueError:
-                sys.stdout.write("    %d,\n" % codepoint)
-        else:
-            sys.stdout.write("    %d,\n" % codepoint)
+                pass
         prev_cp = codepoint
     assert range_start is None
-    sys.stdout.write("""};\n
+    sys.stdout.write("""        default: return codepoint;
+    }
+};\n
 """)
 
 if __name__ == '__main__':
