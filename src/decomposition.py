@@ -23,16 +23,20 @@ def main():
             sys.stdout.write(" 0x%x," % int(cp, 16))
         sys.stdout.write(" 0 };\n")
         decompositions.add(codepoint)
-    sys.stdout.write("""
-const int *_charstr_unicode_decompositions[0x110000] = {
+    sys.stdout.write(r"""
+const int *_charstr_unicode_decomposition(int codepoint)
+{
+    switch (codepoint) {
 """)
     for codepoint in range(0, 0x110000):
         if codepoint in decompositions:
             sys.stdout.write(
-                "    decompose_%x,\n" % codepoint)
-        else:
-            sys.stdout.write("    NULL,\n")
-    sys.stdout.write("};\n")
+                "        case %d: return decompose_%x;\n" % (
+                    codepoint, codepoint))
+    sys.stdout.write(r"""        default: return NULL;
+    }
+}
+""")
 
 if __name__ == '__main__':
     main()

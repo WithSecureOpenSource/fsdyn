@@ -86,8 +86,8 @@ static char *decompose_hangul(int codepoint, char *s, const char *end)
 
 static char *decompose_fully(int codepoint, char *s, const char *end)
 {
-    extern const int *_charstr_unicode_decompositions[0x110000];
-    const int *dp = _charstr_unicode_decompositions[codepoint];
+    extern const int *_charstr_unicode_decomposition(int codepoint);
+    const int *dp = _charstr_unicode_decomposition(codepoint);
     if (!dp) {
         char *hangul_end = decompose_hangul(codepoint, s, end);
         if (hangul_end)
