@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include "charstr.h"
+#include "fsdyn_version.h"
 
 enum {
     MAX_DNS_NAME_LENGTH = 254,
