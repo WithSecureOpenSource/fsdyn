@@ -32,7 +32,7 @@ def main():
     assert range_start is None
     sys.stdout.write("""        default: return codepoint;
     }
-};\n
+}\n
 """)
 
 if __name__ == '__main__':
