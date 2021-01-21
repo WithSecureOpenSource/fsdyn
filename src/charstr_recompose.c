@@ -96,7 +96,6 @@ static int recomposer_feed(recomposer_t *recomposer, int codepoint)
 
 static int recomposer_terminate(recomposer_t *recomposer)
 {
-    
     switch (recomposer->state) {
         case RECOMPOSER_INIT:
             recomposer->state = RECOMPOSER_TERMINATED;
