@@ -25,8 +25,9 @@ int charstr_naive_ucase_unicode(int codepoint)
                 range_start = category
         if category == "Ll":
             try:
-                sys.stdout.write("    case %d: return %d;\n" % (
-                    codepoint, int(line.split(";")[12], 16)))
+                sys.stdout.write(
+                    "        case %d: return %d;\n" % (
+                        codepoint, int(line.split(";")[12], 16)))
             except ValueError:
                 pass
         prev_cp = codepoint
