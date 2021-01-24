@@ -157,7 +157,7 @@ avl_elem_t *avl_tree_get_after(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
-    void *obj;
+    void *obj = tree->obj;
     while (element) {
         int cmp = tree->cmp(key, element->key, obj);
         if (cmp >= 0)
@@ -174,7 +174,7 @@ avl_elem_t *avl_tree_get_on_or_after(avl_tree_t *tree, const void *key)
 {
     avl_elem_t *element = tree->root;
     avl_elem_t *candidate = NULL;
-    void *obj;
+    void *obj = tree->obj;
     while (element) {
         int cmp = tree->cmp(key, element->key, obj);
         if (cmp > 0)
