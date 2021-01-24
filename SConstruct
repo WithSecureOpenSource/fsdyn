@@ -52,7 +52,10 @@ def pkgconfig_parser(prefix):
     return ''
 
 def construct():
-    ccflags = '-g -O2 ' + os.getenv('FSCCFLAGS', '')
+    ccflags = (
+        ' -g -O2 -Wall -Werror '
+        '-Wno-parentheses '
+    ) + os.getenv('FSCCFLAGS', '')
     linkflags = os.getenv('FSLINKFLAGS', '')
     ar_override = os.getenv('FSAR', os.getenv('FSBTAR', None))
     cc_override = os.getenv('FSCC', os.getenv('FSBTCC', None))
