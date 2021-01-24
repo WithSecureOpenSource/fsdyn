@@ -65,7 +65,7 @@ static void generate_set(const char *status)
            "    if (codepoint > %d)\n"
            "         return false;\n"
            "    return (set_%s[codepoint / 64] &"
-                " (uint64_t) 1 << codepoint % 64) != 0;\n"
+                " (uint64_t) 1 << codepoint %% 64) != 0;\n"
            "}\n",
            (unsigned long long) set[set_size - 1], status, max_on, status);
     fsfree(set);
