@@ -4,7 +4,9 @@
 #include "intset_imp.h"
 #include "fsdyn_version.h"
 
+#ifndef LONG_BIT
 #define LONG_BIT (sizeof(unsigned long) * CHAR_BIT)
+#endif
 #define BITS_TO_LONGS(bits) ((bits + LONG_BIT - 1) / LONG_BIT)
 
 intset_t *make_intset(size_t size)
