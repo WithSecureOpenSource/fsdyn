@@ -73,7 +73,7 @@ static void generate_set(const char *status)
 
 static void generate_mappings()
 {
-    int count = 0, min_cp = -1, max_cp;
+    int count = 0, min_cp = -1, max_cp = -1;
     for (int cp = 0; cp < N_CP; cp++)
         if (table[cp].mapping && *table[cp].mapping) {
             if (min_cp == -1)
