@@ -81,6 +81,7 @@ static void emit_node(avl_elem_t *node, int depth)
     }
 }
 
+__attribute__((unused))
 static void print_tree(avl_tree_t *t)
 {
     printf("===============================================================\n");
