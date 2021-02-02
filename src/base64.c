@@ -48,24 +48,25 @@ static char base64_char(uint8_t bitfield, char pos62, char pos63)
     }
 }
 
-static char *put4(char *p, const char *end, char c0, char c1, char c2, char c3)
+static size_t put4(char *p, size_t i, size_t size,
+                   char c0, char c1, char c2, char c3)
 {
-    if (p++ < end)
-        p[-1] = c0;
-    if (p++ < end)
-        p[-1] = c1;
-    if (p++ < end)
-        p[-1] = c2;
-    if (p++ < end)
-        p[-1] = c3;
-    return p;
+    if (i++ < size)
+        p[i-1] = c0;
+    if (i++ < size)
+        p[i-1] = c1;
+    if (i++ < size)
+        p[i-1] = c2;
+    if (i++ < size)
+        p[i-1] = c3;
+    return i;
 }
 
 size_t base64_encode_buffer(const void *source, size_t source_size,
                             char *dest, size_t dest_size,
                             char pos62, char pos63)
 {
-    char *p = dest, *dest_end = dest + dest_size;
+    size_t i = 0;
     const uint8_t *q = source;
     const uint8_t *tail = q + source_size - source_size % 3;
     uint32_t bits;
@@ -76,29 +77,29 @@ size_t base64_encode_buffer(const void *source, size_t source_size,
     size_t dest_body_counter = dest_size / 4;
     while (dest_body_counter-- && q < tail) {
         bits = q[0] << 16 | q[1] << 8 | q[2];
-        *p++ = base64_char(bits >> 18, pos62, pos63);
-        *p++ = base64_char(bits >> 12, pos62, pos63);
-        *p++ = base64_char(bits >> 6, pos62, pos63);
-        *p++ = base64_char(bits, pos62, pos63);
+        dest[i++] = base64_char(bits >> 18, pos62, pos63);
+        dest[i++] = base64_char(bits >> 12, pos62, pos63);
+        dest[i++] = base64_char(bits >> 6, pos62, pos63);
+        dest[i++] = base64_char(bits, pos62, pos63);
         q += 3;
     }
     if (q < tail) {
         bits = q[0] << 16 | q[1] << 8 | q[2];
-        p = put4(p, dest_end,
+        i = put4(dest, i, dest_size,
                  base64_char(bits >> 18, pos62, pos63),
                  base64_char(bits >> 12, pos62, pos63),
                  base64_char(bits >> 6, pos62, pos63),
                  base64_char(bits, pos62, pos63));
         q += 3;
     }
-    p += (tail - q) / 3 * 4;
+    i += (tail - q) / 3 * 4;
     q = tail;
     switch (source_size % 3) {
         case 0:
             break;
         case 1:
             bits = q[0] << 16;
-            p = put4(p, dest_end,
+            i = put4(dest, i, dest_size,
                      base64_char(bits >> 18, pos62, pos63),
                      base64_char(bits >> 12, pos62, pos63),
                      '=',
@@ -106,17 +107,17 @@ size_t base64_encode_buffer(const void *source, size_t source_size,
             break;
         default:
             bits = q[0] << 16 | q[1] << 8;
-            p = put4(p, dest_end,
+            i = put4(dest, i, dest_size,
                      base64_char(bits >> 18, pos62, pos63),
                      base64_char(bits >> 12, pos62, pos63),
                      base64_char(bits >> 6, pos62, pos63),
                      '=');
     }
-    if (p < dest_end)
-        *p = '\0';
+    if (i < dest_size)
+        dest[i] = '\0';
     else if (dest_size)
         dest[dest_size - 1] = '\0';
-    return p - dest;
+    return i;
 }
 
 char *base64_encode_simple(const void *buffer, size_t size)
