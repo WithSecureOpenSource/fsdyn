@@ -232,7 +232,7 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
             pi++;
         }
     }
-    if (bits & ~(~0 << bit_count) ||
+    if (bits & ~(~0U << bit_count) ||
         !good_base64_tail(&source[si], source_size - si, bit_count,
                           ignore_wsp)) {
         errno = EILSEQ;
