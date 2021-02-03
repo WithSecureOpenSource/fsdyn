@@ -48,7 +48,7 @@ static bool test_integer(void)
         return false;
     if (!double_to_integer(-127.0, &n) || n != -127)
         return false;
-    if (!double_to_integer((1ULL << 53) + 1, &n))
+    if (!double_to_integer(0x1p53 + 1, &n))
         return false;
     return true;
 }
@@ -78,7 +78,7 @@ static bool test_unsigned(void)
         return false;
     if (double_to_unsigned(-127.0, &n))
         return false;
-    if (!double_to_unsigned((1ULL << 53) + 1, &n))
+    if (!double_to_unsigned(0x1p53 + 1, &n))
         return false;
     return true;
 }
