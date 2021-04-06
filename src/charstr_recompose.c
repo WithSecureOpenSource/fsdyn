@@ -24,7 +24,7 @@ typedef enum {
  * negative value.
  *
  * Negative return values are accompanied with an errno value. EAGAIN
- * means everything is ok. ENODATA means the output stream reached a
+ * means everything is ok. 0 means the output stream reached a
  * normal termination. Other values (notably EILSEQ) indicate a fatal
  * error. */
 typedef struct {
@@ -99,7 +99,7 @@ static int recomposer_terminate(recomposer_t *recomposer)
     switch (recomposer->state) {
         case RECOMPOSER_INIT:
             recomposer->state = RECOMPOSER_TERMINATED;
-            errno = ENODATA;
+            errno = 0;
             return -1;
         case RECOMPOSER_STARTED:
             recomposer->state = RECOMPOSER_DELIVERING_TERMINATED;
@@ -128,12 +128,12 @@ static int recomposer_read(recomposer_t *recomposer)
         case RECOMPOSER_DELIVERING_TERMINATED:
             if (recomposer->rd >= recomposer->wr) {
                 recomposer->state = RECOMPOSER_TERMINATED;
-                errno = ENODATA;
+                errno = 0;
                 return -1;
             }
             return recomposer->ccs[recomposer->rd++];
         default:
-            errno = ENODATA;
+            errno = 0;
             return -1;
     }
 }
@@ -262,7 +262,7 @@ char *charstr_unicode_recompose(const char *s, const char *end,
         }
         codepoint = recomposer_read(&recomposer);
     }
-    if (errno != ENODATA)
+    if (errno != 0)
         return NULL;
     codepoint = hangul_recomposer_terminate(&hangul_recomposer);
     if (codepoint >= 0) {
