@@ -83,22 +83,22 @@ static void add_element(hash_table_t *hash_table, size_t list_index,
     element->loc = list_append(hash_table->table[list_index], element);
 }
 
-size_t hash_table_size(hash_table_t *table)
+size_t hash_table_size(const hash_table_t *table)
 {
     return table->size;
 }
 
-const void *hash_elem_get_key(hash_elem_t *element)
+const void *hash_elem_get_key(const hash_elem_t *element)
 {
     return element->key;
 }
 
-const void *hash_elem_get_value(hash_elem_t *element)
+const void *hash_elem_get_value(const hash_elem_t *element)
 {
     return element->value;
 }
 
-hash_elem_t *hash_table_get(hash_table_t *table, const void *key)
+hash_elem_t *hash_table_get(const hash_table_t *table, const void *key)
 {
     list_t *list = table->table[table->hash(key) % table->capacity];
     if (list == NULL)
@@ -172,7 +172,7 @@ hash_elem_t *hash_table_pop_any(hash_table_t *table)
     return NULL;
 }
 
-static hash_elem_t *get_next(hash_table_t *table, size_t i)
+static hash_elem_t *get_next(const hash_table_t *table, size_t i)
 {
     for (; i < table->capacity; i++) {
         list_t *list = table->table[i];
@@ -182,12 +182,12 @@ static hash_elem_t *get_next(hash_table_t *table, size_t i)
     return NULL;
 }
 
-hash_elem_t *hash_table_get_any(hash_table_t *table)
+hash_elem_t *hash_table_get_any(const hash_table_t *table)
 {
     return get_next(table, 0);
 }
 
-hash_elem_t *hash_table_get_other(hash_elem_t *element)
+hash_elem_t *hash_table_get_other(const hash_elem_t *element)
 {
     list_elem_t *le = list_next(element->loc);
     if (le)
@@ -195,7 +195,7 @@ hash_elem_t *hash_table_get_other(hash_elem_t *element)
     return get_next(element->hash_table, element->list_index + 1);
 }
 
-int hash_table_empty(hash_table_t *table)
+int hash_table_empty(const hash_table_t *table)
 {
     return table->size == 0;
 }

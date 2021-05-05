@@ -58,24 +58,24 @@ void destroy_hash_element(hash_elem_t *element);
 /*
  * Return the number of elements in the hash table.
  */
-size_t hash_table_size(hash_table_t *table);
+size_t hash_table_size(const hash_table_t *table);
 
 /*
  * Return the key of the element.
  */
-const void *hash_elem_get_key(hash_elem_t *element);
+const void *hash_elem_get_key(const hash_elem_t *element);
 
 /*
  * Return the value of the element.
  */
-const void *hash_elem_get_value(hash_elem_t *element);
+const void *hash_elem_get_value(const hash_elem_t *element);
 
 /*
  * Retrieve an element based on a key. Return NULL if no matching
  * element is found. The returned element is valid until the hash table
  * is modified.
  */
-hash_elem_t *hash_table_get(hash_table_t *table, const void *key);
+hash_elem_t *hash_table_get(const hash_table_t *table, const void *key);
 
 /*
  * Insert an element into the hash table. The key field of the element
@@ -128,7 +128,7 @@ hash_elem_t *hash_table_pop_any(hash_table_t *table);
  * Return a random element. Return NULL if the hash table is empty. See
  * also hash_table_get_other().
  */
-hash_elem_t *hash_table_get_any(hash_table_t *table);
+hash_elem_t *hash_table_get_any(const hash_table_t *table);
 
 /*
  * Return some other random element. Return NULL if there is no other
@@ -136,12 +136,12 @@ hash_elem_t *hash_table_get_any(hash_table_t *table);
  * by calling hash_table_get_any() and then repeatedly calling
  * hash_table_get_other().
  */
-hash_elem_t *hash_table_get_other(hash_elem_t *element);
+hash_elem_t *hash_table_get_other(const hash_elem_t *element);
 
 /*
  * Return a nonzero value if and only if the hash table is empty.
  */
-int hash_table_empty(hash_table_t *table);
+int hash_table_empty(const hash_table_t *table);
 
 /*
  * A function to hash a NUL-terminated string.
