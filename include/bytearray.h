@@ -1,6 +1,7 @@
 #ifndef __FSDYN_BYTEARRAY__
 #define __FSDYN_BYTEARRAY__
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -31,6 +32,10 @@ bool byte_array_copy(byte_array_t *array,
 bool byte_array_copy_string(byte_array_t *array, size_t pos, const char *str);
 bool byte_array_append(byte_array_t *array, const void *data, size_t len);
 bool byte_array_append_string(byte_array_t *array, const char *str);
+bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
+    __attribute__((format(printf, 2, 0)));
+bool byte_array_appendf(byte_array_t *array, const char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
 ssize_t byte_array_append_stream(byte_array_t *array,
                                  byte_array_read_cb read_cb,
                                  void *obj,

@@ -1,8 +1,11 @@
 #include "bytearray.h"
+
 #include "fsalloc.h"
 #include "fsdyn_version.h"
 
 #include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 
 struct byte_array {
@@ -108,6 +111,43 @@ bool byte_array_append(byte_array_t *array, const void *data, size_t len)
 bool byte_array_append_string(byte_array_t *array, const char *str)
 {
     return byte_array_append(array, str, strlen(str));
+}
+
+bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
+{
+    va_list aq;
+    size_t avail;
+    int len;
+
+    for (;;) {
+        avail = array->size - array->cursor;
+        va_copy(aq, ap);
+        len = vsnprintf((char *)array->data + array->cursor, avail, fmt, aq);
+        va_end(aq);
+        if (len < 0) {
+            break;
+        }
+        if ((size_t)len < avail) {
+            array->cursor += len;
+            return true;
+        }
+        if (!ensure_space(array, len)) {
+            break;
+        }
+    }
+    array->data[array->cursor] = 0;
+    return false;
+}
+
+bool byte_array_appendf(byte_array_t *array, const char *fmt, ...)
+{
+    va_list ap;
+    bool res;
+
+    va_start(ap, fmt);
+    res = byte_array_vappendf(array, fmt, ap);
+    va_end(ap);
+    return res;
 }
 
 ssize_t byte_array_append_stream(byte_array_t *array,
