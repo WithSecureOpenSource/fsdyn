@@ -3,6 +3,7 @@
 #include "fsalloc.h"
 #include "fsdyn_version.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -129,7 +130,7 @@ bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
     if (!ensure_space(array, len))
         return false;
     ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, ap);
-    // assert(ret > 0 && (size_t)ret == len)
+    assert(ret > 0 && (size_t)ret == len);
     array->cursor += ret;
     return true;
 }
