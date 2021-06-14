@@ -122,19 +122,14 @@ bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
     va_copy(aq, ap);
     ret = vsnprintf(NULL, 0, fmt, aq);
     va_end(aq);
-    if (ret == 0) {
+    if (ret == 0)
         return true;
-    }
-    if (ret < 0) {
+    if (ret < 0)
         return false;
-    }
     len = (size_t)ret;
-    if (!ensure_space(array, len)) {
+    if (!ensure_space(array, len))
         return false;
-    }
-    va_copy(aq, ap);
-    ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, aq);
-    va_end(aq);
+    ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, ap);
     // assert(ret > 0 && (size_t)ret == len)
     array->cursor += ret;
     return true;
