@@ -136,6 +136,7 @@ bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
     ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, aq);
     va_end(aq);
     // assert(ret > 0 && (size_t)ret == len)
+    array->cursor += ret;
     return true;
 }
 
