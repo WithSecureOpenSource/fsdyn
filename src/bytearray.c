@@ -116,27 +116,27 @@ bool byte_array_append_string(byte_array_t *array, const char *str)
 bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
 {
     va_list aq;
-    size_t avail;
-    int len;
+    size_t len;
+    int ret;
 
-    for (;;) {
-        avail = array->size - array->cursor;
-        va_copy(aq, ap);
-        len = vsnprintf((char *)array->data + array->cursor, avail, fmt, aq);
-        va_end(aq);
-        if (len < 0) {
-            break;
-        }
-        if ((size_t)len < avail) {
-            array->cursor += len;
-            return true;
-        }
-        if (!ensure_space(array, len)) {
-            break;
-        }
+    va_copy(aq, ap);
+    ret = vsnprintf(NULL, 0, fmt, aq);
+    va_end(aq);
+    if (ret == 0) {
+        return true;
     }
-    array->data[array->cursor] = 0;
-    return false;
+    if (ret < 0) {
+        return false;
+    }
+    len = (size_t)ret;
+    if (!ensure_space(array, len)) {
+        return false;
+    }
+    va_copy(aq, ap);
+    ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, aq);
+    va_end(aq);
+    // assert(ret > 0 && (size_t)ret == len)
+    return true;
 }
 
 bool byte_array_appendf(byte_array_t *array, const char *fmt, ...)
