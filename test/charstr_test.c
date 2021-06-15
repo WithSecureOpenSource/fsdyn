@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include <fsdyn/charstr.h>
 
 static bool test_decode_utf8_codepoint(void)
@@ -154,10 +155,11 @@ static bool test_canonical_recomposition(void)
 
 static bool test_sanitization(void)
 {
-    const char *bad_utf8 = "¿Qué ha pasado? "
+    const char *bad_utf8 =
+        "¿Qué ha pasado? "
         "H\xe4n sai b\xe4n\xe4t tytt\xf6yst\xe4v\xe4lt\xe4\xe4n";
     const char *expected = "¿Qué ha pasado? "
-        "H�n sai b�n�t tytt�yst�v�lt��n";
+                           "H�n sai b�n�t tytt�yst�v�lt��n";
     char *sanitized = charstr_sanitize_utf8(bad_utf8);
     bool result = !strcmp(sanitized, expected);
     fsfree(sanitized);

@@ -1,10 +1,11 @@
 #ifndef __FSDYN_CHARSTR__
 #define __FSDYN_CHARSTR__
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
+
 #include "fsalloc.h"
 #include "list.h"
 
@@ -31,25 +32,25 @@ const char *charstr_ncase_starts_with(const char *s, const char *prefix);
 
 bool charstr_ends_with(const char *s, const char *suffix);
 
-#define CHARSTR_CONTROL 0x0001   /* '\0'..'\037', '\177' */
-#define CHARSTR_DIGIT   0x0002   /* '0'..'9' */
-#define CHARSTR_LOWER   0x0004   /* 'a'..'z' */
-#define CHARSTR_UPPER   0x0008   /* 'A'..'Z' */
-#define CHARSTR_HT      0x0010   /* '\t' */
-#define CHARSTR_LF      0x0020   /* '\n' */
-#define CHARSTR_FF      0x0040   /* '\f' */
-#define CHARSTR_CR      0x0080   /* '\r' */
-#define CHARSTR_SPACE   0x0100   /* ' ' */
-#define CHARSTR_OCTAL   0x0200   /* '0'..'7' */
-#define CHARSTR_HEX     0x0400   /* '0'..'9', 'a'..'f', 'A'..'F' */
-#define CHARSTR_UNDER   0x0800   /* '_' */
-#define CHARSTR_PRINT   0x1000   /* ' '..'~' */
+#define CHARSTR_CONTROL 0x0001 /* '\0'..'\037', '\177' */
+#define CHARSTR_DIGIT   0x0002 /* '0'..'9' */
+#define CHARSTR_LOWER   0x0004 /* 'a'..'z' */
+#define CHARSTR_UPPER   0x0008 /* 'A'..'Z' */
+#define CHARSTR_HT      0x0010 /* '\t' */
+#define CHARSTR_LF      0x0020 /* '\n' */
+#define CHARSTR_FF      0x0040 /* '\f' */
+#define CHARSTR_CR      0x0080 /* '\r' */
+#define CHARSTR_SPACE   0x0100 /* ' ' */
+#define CHARSTR_OCTAL   0x0200 /* '0'..'7' */
+#define CHARSTR_HEX     0x0400 /* '0'..'9', 'a'..'f', 'A'..'F' */
+#define CHARSTR_UNDER   0x0800 /* '_' */
+#define CHARSTR_PRINT   0x1000 /* ' '..'~' */
 
 #define CHARSTR_TAB CHARSTR_HT
-#define CHARSTR_NL CHARSTR_LF
+#define CHARSTR_NL  CHARSTR_LF
 
 #define CHARSTR_WHITESPACE \
-  (CHARSTR_HT | CHARSTR_LF | CHARSTR_FF | CHARSTR_CR | CHARSTR_SPACE)
+    (CHARSTR_HT | CHARSTR_LF | CHARSTR_FF | CHARSTR_CR | CHARSTR_SPACE)
 #define CHARSTR_ALPHA (CHARSTR_LOWER | CHARSTR_UPPER)
 #define CHARSTR_ALNUM (CHARSTR_ALPHA | CHARSTR_DIGIT)
 #define CHARSTR_ASCII (CHARSTR_CONTROL | CHARSTR_PRINT)
@@ -90,8 +91,7 @@ unsigned charstr_split_into_array(const char *s, char delim, char **array,
 list_t *charstr_split_atoms(const char *s);
 
 /* Like charstr_split(), but the delimiter is a string. */
-list_t *charstr_split_str(const char *s, const char *delim,
-                          unsigned max_split);
+list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split);
 
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
  * characters stripped. The return value should be freed with
@@ -133,36 +133,36 @@ char *charstr_sanitize_utf8(const char *s);
 char *charstr_encode_utf8_codepoint(int codepoint, char *s, const char *end);
 
 typedef enum {
-    UNICODE_CATEGORY_Cn,        /* Other, not assigned */
-    UNICODE_CATEGORY_Cc,        /* Other, control */
-    UNICODE_CATEGORY_Cf,        /* Other, format */
-    UNICODE_CATEGORY_Co,        /* Other, private use */
-    UNICODE_CATEGORY_Cs,        /* Other, surrogate */
-    UNICODE_CATEGORY_Ll,        /* Letter, lowercase */
-    UNICODE_CATEGORY_Lm,        /* Letter, modifier */
-    UNICODE_CATEGORY_Lo,        /* Letter, other */
-    UNICODE_CATEGORY_Lt,        /* Letter, titlecase */
-    UNICODE_CATEGORY_Lu,        /* Letter, uppercase */
-    UNICODE_CATEGORY_Mc,        /* Mark, spacing combining */
-    UNICODE_CATEGORY_Me,        /* Mark, enclosing */
-    UNICODE_CATEGORY_Mn,        /* Mark, nonspacing */
-    UNICODE_CATEGORY_Nd,        /* Number, decimal digit */
-    UNICODE_CATEGORY_Nl,        /* Number, letter */
-    UNICODE_CATEGORY_No,        /* Number, other */
-    UNICODE_CATEGORY_Pc,        /* Punctuation, connector */
-    UNICODE_CATEGORY_Pd,        /* Punctuation, dash */
-    UNICODE_CATEGORY_Pe,        /* Punctuation, close */
-    UNICODE_CATEGORY_Pf,        /* Punctuation, final quote */
-    UNICODE_CATEGORY_Pi,        /* Punctuation, initial quote */
-    UNICODE_CATEGORY_Po,        /* Punctuation, other */
-    UNICODE_CATEGORY_Ps,        /* Punctuation, open */
-    UNICODE_CATEGORY_Sc,        /* Symbol, currency */
-    UNICODE_CATEGORY_Sk,        /* Symbol, modifier */
-    UNICODE_CATEGORY_Sm,        /* Symbol, math */
-    UNICODE_CATEGORY_So,        /* Symbol, other */
-    UNICODE_CATEGORY_Zl,        /* Separator, line */
-    UNICODE_CATEGORY_Zp,        /* Separator, paragraph */
-    UNICODE_CATEGORY_Zs         /* Separator, space */
+    UNICODE_CATEGORY_Cn, /* Other, not assigned */
+    UNICODE_CATEGORY_Cc, /* Other, control */
+    UNICODE_CATEGORY_Cf, /* Other, format */
+    UNICODE_CATEGORY_Co, /* Other, private use */
+    UNICODE_CATEGORY_Cs, /* Other, surrogate */
+    UNICODE_CATEGORY_Ll, /* Letter, lowercase */
+    UNICODE_CATEGORY_Lm, /* Letter, modifier */
+    UNICODE_CATEGORY_Lo, /* Letter, other */
+    UNICODE_CATEGORY_Lt, /* Letter, titlecase */
+    UNICODE_CATEGORY_Lu, /* Letter, uppercase */
+    UNICODE_CATEGORY_Mc, /* Mark, spacing combining */
+    UNICODE_CATEGORY_Me, /* Mark, enclosing */
+    UNICODE_CATEGORY_Mn, /* Mark, nonspacing */
+    UNICODE_CATEGORY_Nd, /* Number, decimal digit */
+    UNICODE_CATEGORY_Nl, /* Number, letter */
+    UNICODE_CATEGORY_No, /* Number, other */
+    UNICODE_CATEGORY_Pc, /* Punctuation, connector */
+    UNICODE_CATEGORY_Pd, /* Punctuation, dash */
+    UNICODE_CATEGORY_Pe, /* Punctuation, close */
+    UNICODE_CATEGORY_Pf, /* Punctuation, final quote */
+    UNICODE_CATEGORY_Pi, /* Punctuation, initial quote */
+    UNICODE_CATEGORY_Po, /* Punctuation, other */
+    UNICODE_CATEGORY_Ps, /* Punctuation, open */
+    UNICODE_CATEGORY_Sc, /* Symbol, currency */
+    UNICODE_CATEGORY_Sk, /* Symbol, modifier */
+    UNICODE_CATEGORY_Sm, /* Symbol, math */
+    UNICODE_CATEGORY_So, /* Symbol, other */
+    UNICODE_CATEGORY_Zl, /* Separator, line */
+    UNICODE_CATEGORY_Zp, /* Separator, paragraph */
+    UNICODE_CATEGORY_Zs  /* Separator, space */
 } charstr_unicode_category_t;
 
 charstr_unicode_category_t charstr_unicode_category(int codepoint);
@@ -175,14 +175,14 @@ int charstr_naive_ucase_unicode(int codepoint);
 
 enum {
     /* UNICODE_*_DISALLOWED and UNICODE_*_MAYBE are mutually exclusive */
-    UNICODE_NFC_DISALLOWED  = 0x01,
-    UNICODE_NFC_MAYBE       = 0x02,
-    UNICODE_NFD_DISALLOWED  = 0x04,
-    UNICODE_NFD_MAYBE       = 0x08,
+    UNICODE_NFC_DISALLOWED = 0x01,
+    UNICODE_NFC_MAYBE = 0x02,
+    UNICODE_NFD_DISALLOWED = 0x04,
+    UNICODE_NFD_MAYBE = 0x08,
     UNICODE_NFKC_DISALLOWED = 0x10,
-    UNICODE_NFKC_MAYBE      = 0x20,
+    UNICODE_NFKC_MAYBE = 0x20,
     UNICODE_NFKD_DISALLOWED = 0x40,
-    UNICODE_NFKD_MAYBE      = 0x80
+    UNICODE_NFKD_MAYBE = 0x80
 };
 
 /* You probably don't need this function. It is used internally in the
@@ -228,8 +228,8 @@ bool charstr_unicode_canonically_decomposed(const char *s, const char *end);
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
  * insufficient output buffer space. */
-char *charstr_unicode_decompose(const char *s, const char *end,
-                                char output[], const char *output_end);
+char *charstr_unicode_decompose(const char *s, const char *end, char output[],
+                                const char *output_end);
 
 /* Unconditionally copy the given UTF-8 string into a buffer
  * simultaneously performing a canonical NFC-normalization. The input
@@ -247,8 +247,8 @@ char *charstr_unicode_decompose(const char *s, const char *end,
  * A NULL value is returned and errno is set in case of an error:
  * EILSEQ indicates a badly encoded input string; EOVERFLOW indicates
  * insufficient output buffer space. */
-char *charstr_unicode_recompose(const char *s, const char *end,
-                                char output[], const char *output_end);
+char *charstr_unicode_recompose(const char *s, const char *end, char output[],
+                                const char *output_end);
 
 /* Return a URL encoded string corresponding to the given byte:
  *  * ASCII 32 (SPC) yields "+"
@@ -288,7 +288,6 @@ const char *charstr_url_custom_encode_byte(charstr_url_encoder_t *encoder,
  * The returned string is allocated using fsalloc(). */
 char *charstr_url_custom_encode(charstr_url_encoder_t *encoder,
                                 const char *string);
-
 
 /* Create a URL-decoding for the given NUL-terminated string.
  * The returned string is allocated using fsalloc().

@@ -1,43 +1,21 @@
-#include <stdbool.h>
-#include "fsalloc.h"
-#include "list.h"
 #include "hashtable.h"
-#include "hashtable_imp.h"
+
+#include <stdbool.h>
+
+#include "fsalloc.h"
 #include "fsdyn_version.h"
+#include "hashtable_imp.h"
+#include "list.h"
 
 /* Values from: https://planetmath.org/goodhashtableprimes */
 static const size_t GOOD_SIZES[] = {
-    53,
-    97,
-    193,
-    389,
-    769,
-    1543,
-    3079,
-    6151,
-    12289,
-    24593,
-    49157,
-    98317,
-    196613,
-    393241,
-    786433,
-    1572869,
-    3145739,
-    6291469,
-    12582917,
-    25165843,
-    50331653,
-    100663319,
-    201326611,
-    402653189,
-    805306457,
-    1610612741,
-    0
+    53,        97,        193,       389,       769,        1543,     3079,
+    6151,      12289,     24593,     49157,     98317,      196613,   393241,
+    786433,    1572869,   3145739,   6291469,   12582917,   25165843, 50331653,
+    100663319, 201326611, 402653189, 805306457, 1610612741, 0
 };
 
-hash_table_t *make_hash_table(size_t capacity,
-                              uint64_t (*hash)(const void *),
+hash_table_t *make_hash_table(size_t capacity, uint64_t (*hash)(const void *),
                               int (*cmp)(const void *, const void *))
 {
     hash_table_t *table = fsalloc(sizeof *table);

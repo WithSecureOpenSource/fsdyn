@@ -1,10 +1,11 @@
-#include <errno.h>
 #include <assert.h>
+#include <errno.h>
+
 #include "charstr.h"
 #include "fsdyn_version.h"
 
 enum {
-    MAX_CC_SEQ_LENGTH = 100
+    MAX_CC_SEQ_LENGTH = 100,
 };
 
 typedef enum {
@@ -66,8 +67,7 @@ static int recomposer_feed(recomposer_t *recomposer, int codepoint)
             int ccc = charstr_unicode_canonical_combining_class(codepoint);
             if (!recomposer_blocked(recomposer->ccs, recomposer->wr, ccc)) {
                 starter = recomposer->starter;
-                int p = _charstr_unicode_primary_composite(starter,
-                                                           codepoint);
+                int p = _charstr_unicode_primary_composite(starter, codepoint);
                 if (p >= 0) {
                     recomposer->starter = p;
                     errno = EAGAIN;
@@ -192,7 +192,7 @@ static int hangul_recomposer_feed(hangul_recomposer_t *recomposer,
             int si = recomposer->next - S_BASE;
             if (si >= 0 && si < S_COUNT && !(si % T_COUNT)) {
                 int ti = codepoint - T_BASE;
-                if (ti > 0&& ti < T_COUNT) {
+                if (ti > 0 && ti < T_COUNT) {
                     recomposer->next += ti;
                     return -1;
                 }
@@ -220,8 +220,8 @@ static int hangul_recomposer_terminate(hangul_recomposer_t *recomposer)
     }
 }
 
-char *charstr_unicode_recompose(const char *s, const char *end,
-                                char output[], const char *output_end)
+char *charstr_unicode_recompose(const char *s, const char *end, char output[],
+                                const char *output_end)
 {
     char *q = output;
     recomposer_t recomposer;

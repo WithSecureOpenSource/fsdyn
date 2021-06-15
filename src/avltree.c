@@ -1,4 +1,5 @@
 #include "avltree.h"
+
 #include "avltree_imp.h"
 #include "fsalloc.h"
 #include "fsdyn_version.h"
@@ -74,7 +75,8 @@ avl_elem_t *avl_tree_get(avl_tree_t *tree, const void *key)
             return element;
         if (cmp > 0)
             element = element->right;
-        else element = element->left;
+        else
+            element = element->left;
     }
     return NULL;
 }
@@ -249,7 +251,7 @@ static avl_elem_t *rotate_left(avl_elem_t *element)
         new_top = element->right;
         element->right = new_top->left;
         new_top->left = element;
-        element->balance = - --new_top->balance;
+        element->balance = -(--new_top->balance);
     } else {
         new_top = element->right->left;
         element->right->left = new_top->right;
@@ -303,7 +305,8 @@ static void substitute(avl_tree_t *tree, avl_elem_t *new_child,
         avl_elem_t *parent = old_child->parent;
         if (parent->left == old_child)
             parent->left = new_child;
-        else parent->right = new_child;
+        else
+            parent->right = new_child;
     }
 }
 
@@ -327,7 +330,7 @@ static int put(avl_tree_t *tree, avl_elem_t **ploc, avl_elem_t *element,
         element->left->parent = element;
     if (element->right)
         element->right->parent = element;
-    *premoved_element  = loc;
+    *premoved_element = loc;
     return 0;
 }
 
@@ -365,7 +368,8 @@ static void lighten_parent(avl_tree_t *tree, avl_elem_t *element)
     avl_elem_t *parent = element->parent;
     if (parent->right == element)
         lighten_right(tree, parent);
-    else lighten_left(tree, parent);
+    else
+        lighten_left(tree, parent);
 }
 
 static void lighten_right(avl_tree_t *tree, avl_elem_t *element)
@@ -384,12 +388,12 @@ static void lighten_right(avl_tree_t *tree, avl_elem_t *element)
             }
             if (new_top->parent->right == element)
                 new_top->parent->right = new_top;
-            else new_top->parent->left = new_top;
+            else
+                new_top->parent->left = new_top;
             if (new_top->balance != 1)
                 lighten_parent(tree, new_top);
             break;
-        default:
-            ;
+        default:;
     }
 }
 
@@ -409,12 +413,12 @@ static void lighten_left(avl_tree_t *tree, avl_elem_t *element)
             }
             if (new_top->parent->right == element)
                 new_top->parent->right = new_top;
-            else new_top->parent->left = new_top;
+            else
+                new_top->parent->left = new_top;
             if (new_top->balance != -1)
                 lighten_parent(tree, new_top);
             break;
-        default:
-            ;
+        default:;
     }
 }
 
@@ -422,10 +426,18 @@ static void exchange(avl_tree_t *tree, avl_elem_t *e1, avl_elem_t *e2)
 {
     substitute(tree, e1, e2);
     substitute(tree, e2, e1);
-    avl_elem_t *l = e1->left; e1->left = e2->left; e2->left = l;
-    avl_elem_t *r = e1->right; e1->right = e2->right; e2->right = r;
-    avl_elem_t *p = e1->parent; e1->parent = e2->parent; e2->parent = p;
-    int b = e1->balance; e1->balance = e2->balance; e2->balance = b;
+    avl_elem_t *l = e1->left;
+    e1->left = e2->left;
+    e2->left = l;
+    avl_elem_t *r = e1->right;
+    e1->right = e2->right;
+    e2->right = r;
+    avl_elem_t *p = e1->parent;
+    e1->parent = e2->parent;
+    e2->parent = p;
+    int b = e1->balance;
+    e1->balance = e2->balance;
+    e2->balance = b;
     if (e1->left != NULL)
         e1->left->parent = e1;
     if (e1->right != NULL)
@@ -476,9 +488,7 @@ avl_elem_t *avl_tree_get_first(avl_tree_t *tree)
     if (avl_tree_empty(tree))
         return NULL;
     avl_elem_t *element;
-    for (element = tree->root;
-         element->left != NULL;
-         element = element->left)
+    for (element = tree->root; element->left != NULL; element = element->left)
         ;
     return element;
 }
@@ -488,9 +498,7 @@ avl_elem_t *avl_tree_get_last(avl_tree_t *tree)
     if (avl_tree_empty(tree))
         return NULL;
     avl_elem_t *element;
-    for (element = tree->root;
-         element->right != NULL;
-         element = element->right)
+    for (element = tree->root; element->right != NULL; element = element->right)
         ;
     return element;
 }

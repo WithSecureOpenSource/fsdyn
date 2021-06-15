@@ -1,9 +1,10 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
-#include <fsdyn/date.h>
 #include <time.h>
+
+#include <fsdyn/date.h>
 
 static bool test_epoch_to_utc()
 {
@@ -17,10 +18,11 @@ static bool test_epoch_to_utc()
         asctime_r(&a, date);
         asctime_r(&b, gmtime_date);
         if (strcmp(date, gmtime_date)) {
-            fprintf(stderr, "epoch: %.0f\n"
+            fprintf(stderr,
+                    "epoch: %.0f\n"
                     "  epoch_to_utc: %s"
                     "  gmtime:       %s",
-                    (float)epoch, gmtime_date, date);
+                    (float) epoch, gmtime_date, date);
             return false;
         }
     }

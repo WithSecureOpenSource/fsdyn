@@ -1,20 +1,20 @@
 #if _POSIX_C_SOURCE < 200809L
 #define _GNU_SOURCE
 #endif
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+
 #include "charstr.h"
 
 enum {
-    N_CP = 0x110000
+    N_CP = 0x110000,
 };
 
 static struct {
     char *status, *mapping, *idna2008;
 } table[N_CP];
-
 
 static void generate_test(const char *status)
 {
@@ -26,8 +26,8 @@ static void generate_test(const char *status)
     for (int cp = 0; cp < N_CP; cp++) {
         if (strcmp(table[cp].status, status)) {
             if (prev_cp >= 0) {
-                printf("    if (codepoint < %d) return codepoint >= %d;\n",
-                       cp, prev_cp);
+                printf("    if (codepoint < %d) return codepoint >= %d;\n", cp,
+                       prev_cp);
                 prev_cp = -1;
             }
         } else if (prev_cp < 0)
@@ -65,7 +65,7 @@ static void generate_set(const char *status)
            "    if (codepoint > %d)\n"
            "         return false;\n"
            "    return (set_%s[codepoint / 64] &"
-                " (uint64_t) 1 << codepoint %% 64) != 0;\n"
+           " (uint64_t) 1 << codepoint %% 64) != 0;\n"
            "}\n",
            (unsigned long long) set[set_size - 1], status, max_on, status);
     fsfree(set);
@@ -85,7 +85,8 @@ static void generate_mappings()
            "static struct {\n"
            "    int from;\n"
            "    const char *to;\n"
-           "} const idna_mappings[%d] = {\n", count);
+           "} const idna_mappings[%d] = {\n",
+           count);
     for (int cp = 0; cp < N_CP; cp++)
         if (table[cp].mapping && *table[cp].mapping) {
             printf("    { %d, \"", cp);
@@ -101,7 +102,8 @@ static void generate_mappings()
            "        return NULL;\n"
            "    int low = 0, high = %d;\n"
            "    while (low < high) {\n"
-           "        int middle = (4 * low + high) / 5;\n" /* heuristic low bias */
+           "        int middle = (4 * low + high) / 5;"
+           " /* heuristic low bias */\n"
            "        int from = idna_mappings[middle].from;\n"
            "        if (from < codepoint)\n"
            "            low = middle + 1;\n"
@@ -110,7 +112,8 @@ static void generate_mappings()
            "    if (idna_mappings[high].from != codepoint)\n"
            "        return NULL;\n"
            "    return idna_mappings[high].to;\n"
-           "}\n", min_cp, max_cp, count - 1);
+           "}\n",
+           min_cp, max_cp, count - 1);
 }
 
 int main(int argc, const char *const *argv)
@@ -184,8 +187,10 @@ int main(int argc, const char *const *argv)
     generate_test("disallowed_STD3_valid");
     generate_test("disallowed_STD3_mapped");
     generate_test("ignored");
-    generate_set("mapped"); /* about the same as generate_test() but probably faster */
-    generate_set("valid"); /* 20 kB smaller than generate_test() and probably faster */
+    /* about the same as generate_test() but probably faster */
+    generate_set("mapped");
+    /* 20 kB smaller than generate_test() and probably faster */
+    generate_set("valid");
     generate_mappings();
     return EXIT_SUCCESS;
 }

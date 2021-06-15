@@ -2,8 +2,9 @@
 #define _GNU_SOURCE
 #endif
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include <fsdyn/charstr.h>
 
 static bool test(int ln, const char *source, const char *toUnicode,
@@ -19,10 +20,9 @@ static bool test(int ln, const char *source, const char *toUnicode,
         verdict = result && !strcmp(result, toAscii);
         if (!verdict)
             fprintf(stderr, "  L%d: FAIL: %s ~ %s\n", ln, source, toAscii);
-    }
-    else {
+    } else {
         fprintf(stderr, "  L%d: strict: %s ~ %s\n", ln, source, toAscii);
-        verdict = true;        /* It's ok to be strict */
+        verdict = true; /* It's ok to be strict */
     }
     fsfree(result);
     return verdict;

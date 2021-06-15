@@ -1,15 +1,16 @@
 #include <math.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <fsdyn/priority_queue.h>
+
 #include <fsdyn/avltree.h>
+#include <fsdyn/priority_queue.h>
 
 enum {
     K = 20,
-    N = 1000000
+    N = 1000000,
 };
 
 typedef struct {

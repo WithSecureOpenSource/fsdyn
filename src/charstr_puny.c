@@ -1,6 +1,7 @@
+#include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
+
 #include "charstr.h"
 #include "fsdyn_version.h"
 
@@ -20,7 +21,8 @@ static int adapt(int delta, size_t numpoints, bool firsttime)
 {
     if (firsttime)
         delta /= DAMP;
-    else delta /= 2;
+    else
+        delta /= 2;
     delta += delta / numpoints;
     int k;
     for (k = 0; delta > (BASE - TMIN) * TMAX / 2; k += BASE)
@@ -49,9 +51,8 @@ static char *fail(const char *reason)
 }
 
 static const char *punycode_encode_pass1(const char *p, const char *end,
-                                         size_t *pc_count,
-                                         char ascii[], size_t *ascii_count,
-                                         int nonascii[],
+                                         size_t *pc_count, char ascii[],
+                                         size_t *ascii_count, int nonascii[],
                                          size_t *nonascii_count)
 {
     if (p == end)
@@ -76,7 +77,8 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
         } else if (first &&
                    charstr_unicode_category(codepoint) == UNICODE_CATEGORY_Mc)
             return fail("label begins with composing mark");
-        else record_nonascii(codepoint, nonascii, nonascii_count);
+        else
+            record_nonascii(codepoint, nonascii, nonascii_count);
         first = false;
     }
     *pc_count = n;
@@ -95,10 +97,10 @@ static char *emit(char *o, char *end_output, size_t *output_size, char c)
     return o;
 }
 
-static char *punycode_encode_pass2(const char *input, const char *end,
-                                   char *o, char *end_output,
-                                   size_t *output_size, size_t ascii_count,
-                                   int nonascii[], size_t nonascii_count)
+static char *punycode_encode_pass2(const char *input, const char *end, char *o,
+                                   char *end_output, size_t *output_size,
+                                   size_t ascii_count, int nonascii[],
+                                   size_t nonascii_count)
 {
     int n = INITIAL_N;
     int delta = 0;
@@ -124,7 +126,8 @@ static char *punycode_encode_pass2(const char *input, const char *end,
                     t = TMIN;
                 else if (k >= bias + TMAX)
                     t = TMAX;
-                else t = k - bias;
+                else
+                    t = k - bias;
                 if (q < t)
                     break;
                 o = emit(o, end_output, output_size,
@@ -148,7 +151,7 @@ static const char *punycode_encode(const char *input, const char *end,
 {
     char ascii[end - input]; /* nonunique characters in order of appearance */
     size_t ascii_count;
-    int nonascii[end - input];  /* unique codepoints in ascending order */
+    int nonascii[end - input]; /* unique codepoints in ascending order */
     size_t nonascii_count;
     size_t pc_count;
     const char *next =
@@ -216,7 +219,8 @@ static char *safecopy(const char *src, char *dest, char *end)
     size_t capacity = end - dest;
     size_t size = strlen(src);
     if (!dest || size > capacity)
-        return NULL;;
+        return NULL;
+    ;
     memcpy(dest, src, size);
     return dest + size;
 }
@@ -306,4 +310,3 @@ const char *charstr_idna_status(int codepoint)
         return "disallowed_STD3_mapped";
     return "?";
 }
-

@@ -1,9 +1,10 @@
 #ifndef __FSDYN_BASE64__
 #define __FSDYN_BASE64__
 
-#include <unistd.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <unistd.h>
+
 #include "fsalloc.h"
 
 #ifdef __cplusplus
@@ -17,9 +18,8 @@ extern "C" {
  * If pos62 and/or pos63 is -1, the defaults '+' and '/' are used.
  *
  * This function cannot fail. */
-size_t base64_encode_buffer(const void *source, size_t source_size,
-                            char *dest, size_t dest_size,
-                            char pos62, char pos63);
+size_t base64_encode_buffer(const void *source, size_t source_size, char *dest,
+                            size_t dest_size, char pos62, char pos63);
 
 /* Return the size of the Base64 encoding (excluding the NUL
  * character) for the given number of bytes. Return -1 in case of an
@@ -45,9 +45,9 @@ char *base64_encode_simple(const void *buffer, size_t size);
  *
  *    EOVERFLOW: the size of the decoding is larger than ssize_t can express
  */
-ssize_t base64_decode_buffer(const char *source, size_t source_size,
-                             void *dest, size_t dest_size,
-                             char pos62, char pos63, bool ignore_wsp);
+ssize_t base64_decode_buffer(const char *source, size_t source_size, void *dest,
+                             size_t dest_size, char pos62, char pos63,
+                             bool ignore_wsp);
 
 /* Create a freshly allocated binary blob from a NUL-terminated,
  * Base64-encoded string (with whitespace ignored). The return value
@@ -69,8 +69,8 @@ extern const int8_t base64_bitfield_decoding[256];
 /* Special values in base64_bitfield_decoding[]. */
 enum {
     BASE64_ILLEGAL_OTHER = -1,
-    BASE64_ILLEGAL_WHITESPACE = -2,     /* ' \t\n\f\r' */
-    BASE64_ILLEGAL_TRAILER = -3,        /* '=' */
+    BASE64_ILLEGAL_WHITESPACE = -2, /* ' \t\n\f\r' */
+    BASE64_ILLEGAL_TRAILER = -3,    /* '=' */
     BASE64_ILLEGAL_NUL = -4
 };
 

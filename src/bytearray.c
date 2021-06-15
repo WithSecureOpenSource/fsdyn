@@ -1,12 +1,12 @@
 #include "bytearray.h"
 
-#include "fsalloc.h"
-#include "fsdyn_version.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "fsalloc.h"
+#include "fsdyn_version.h"
 
 struct byte_array {
     uint8_t *data;
@@ -71,9 +71,7 @@ static bool ensure_space(byte_array_t *array, size_t len)
     return true;
 }
 
-bool byte_array_copy(byte_array_t *array,
-                     size_t pos,
-                     const void *data,
+bool byte_array_copy(byte_array_t *array, size_t pos, const void *data,
                      size_t len)
 {
     if (pos > array->cursor)
@@ -126,11 +124,11 @@ bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
         return true;
     if (ret < 0)
         return false;
-    len = (size_t)ret;
+    len = (size_t) ret;
     if (!ensure_space(array, len))
         return false;
-    ret = vsnprintf((char *)array->data + array->cursor, len + 1, fmt, ap);
-    assert(ret > 0 && (size_t)ret == len);
+    ret = vsnprintf((char *) array->data + array->cursor, len + 1, fmt, ap);
+    assert(ret > 0 && (size_t) ret == len);
     array->cursor += ret;
     return true;
 }
@@ -147,8 +145,7 @@ bool byte_array_appendf(byte_array_t *array, const char *fmt, ...)
 }
 
 ssize_t byte_array_append_stream(byte_array_t *array,
-                                 byte_array_read_cb read_cb,
-                                 void *obj,
+                                 byte_array_read_cb read_cb, void *obj,
                                  size_t len)
 {
     size_t available = array->max_size - array->cursor;

@@ -1,5 +1,7 @@
-#include <string.h>
 #include "fsalloc.h"
+
+#include <string.h>
+
 #include "fsdyn_version.h"
 
 static void *naive_realloc(void *ptr, size_t size)
@@ -29,12 +31,9 @@ fs_realloc_t fs_get_reallocator(void)
     return reallocator;
 }
 
-static void dummy_reallocator_counter(int count)
-{
-}
+static void dummy_reallocator_counter(int count) {}
 
-static fs_reallocator_counter_t reallocator_counter =
-    dummy_reallocator_counter;
+static fs_reallocator_counter_t reallocator_counter = dummy_reallocator_counter;
 
 void fs_set_reallocator_counter(fs_reallocator_counter_t counter)
 {

@@ -1,5 +1,6 @@
-#include <string.h>
 #include <errno.h>
+#include <string.h>
+
 #include "charstr.h"
 #include "fsdyn_version.h"
 
@@ -47,8 +48,7 @@ static void sort_combining_characters(char *begin, const char *end)
     int last_ccc = 0;
     while (s != end) {
         int codepoint;
-        const char *after_s =
-            charstr_decode_utf8_codepoint(s, end, &codepoint);
+        const char *after_s = charstr_decode_utf8_codepoint(s, end, &codepoint);
         int ccc = charstr_unicode_canonical_combining_class(codepoint);
         if (ccc == 0) {
             begin = (char *) after_s;
@@ -78,8 +78,8 @@ static void sort_combining_characters(char *begin, const char *end)
     }
 }
 
-char *charstr_unicode_decompose(const char *s, const char *end,
-                                char output[], const char *output_end)
+char *charstr_unicode_decompose(const char *s, const char *end, char output[],
+                                const char *output_end)
 {
     char *q = output;
     while (s != end && *s) {

@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <fsdyn/base64.h>
+#include <string.h>
 
+#include <fsdyn/base64.h>
 
 static struct {
     const char *decoded, *encoded;
@@ -12,7 +12,7 @@ static struct {
     { "012345678901234567890", "MDEyMzQ1Njc4OTAxMjM0NTY3ODkw" },
     { "", "" },
     { ".", "Lg==" },
-    { 0 }
+    { 0 },
 };
 
 static bool test_encoding_length(void)
@@ -20,8 +20,8 @@ static bool test_encoding_length(void)
     int i;
     for (i = 0; data[i].decoded; i++) {
         size_t decoded_size = strlen(data[i].decoded);
-        size_t count = base64_encode_buffer(data[i].decoded, decoded_size,
-                                            NULL, 0, -1, -1);
+        size_t count = base64_encode_buffer(data[i].decoded, decoded_size, NULL,
+                                            0, -1, -1);
         if (count != strlen(data[i].encoded)) {
             fprintf(stderr, "Error: bad Base64 encoding size (1) for \"%s\"\n",
                     data[i].decoded);
@@ -41,8 +41,8 @@ static bool test_decoding_length(void)
     int i;
     for (i = 0; data[i].decoded; i++) {
         size_t count =
-            base64_decode_buffer(data[i].encoded, strlen(data[i].encoded),
-                                 NULL, 0, -1, -1, false);
+            base64_decode_buffer(data[i].encoded, strlen(data[i].encoded), NULL,
+                                 0, -1, -1, false);
         if (count != strlen(data[i].decoded)) {
             fprintf(stderr, "Error: bad Base64 decoding size (1) for \"%s\"\n",
                     data[i].encoded);
@@ -50,8 +50,7 @@ static bool test_decoding_length(void)
         }
 
         count =
-            base64_decode_buffer(data[i].encoded, -1,
-                                 NULL, 0, -1, -1, false);
+            base64_decode_buffer(data[i].encoded, -1, NULL, 0, -1, -1, false);
         if (count != strlen(data[i].decoded)) {
             fprintf(stderr, "Error: bad Base64 decoding size (1) for \"%s\"\n",
                     data[i].encoded);
@@ -137,9 +136,9 @@ static bool test_truncated_decoding(void)
             }
         }
         memset(buffer, '^', decoded_size + 10);
-        size_t count = base64_decode_buffer(data[i].encoded, encoded_size,
-                                            buffer, decoded_size + 10,
-                                            -1, -1, false);
+        size_t count =
+            base64_decode_buffer(data[i].encoded, encoded_size, buffer,
+                                 decoded_size + 10, -1, -1, false);
         if (count != decoded_size) {
             fprintf(stderr, "Error: bad Base64 decoding size (3) for \"%s\"\n",
                     data[i].encoded);

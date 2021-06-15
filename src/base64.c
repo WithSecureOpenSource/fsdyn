@@ -1,8 +1,10 @@
-#include <errno.h>
-#include <assert.h>
-#include <string.h>
-#include "fsalloc.h"
 #include "base64.h"
+
+#include <assert.h>
+#include <errno.h>
+#include <string.h>
+
+#include "fsalloc.h"
 #include "fsdyn_version.h"
 
 size_t base64_encoding_size(size_t binary_size)
@@ -17,22 +19,20 @@ const char base64_bitfield_encoding[64] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 const int8_t base64_bitfield_decoding[256] = {
-    -4, -1, -1, -1, -1, -1, -1, -1, -1, -2, -2, -1, -2, -2, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
-    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -3, -1, -1,
-    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
-    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -4, -1, -1, -1, -1, -1, -1, -1, -1, -2, -2, -1, -2, -2, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+    61, -1, -1, -1, -3, -1, -1, -1, 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1,
+    -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+    43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
 static char base64_char(uint8_t bitfield, char pos62, char pos63)
@@ -48,23 +48,22 @@ static char base64_char(uint8_t bitfield, char pos62, char pos63)
     }
 }
 
-static size_t put4(char *p, size_t i, size_t size,
-                   char c0, char c1, char c2, char c3)
+static size_t put4(char *p, size_t i, size_t size, char c0, char c1, char c2,
+                   char c3)
 {
     if (i++ < size)
-        p[i-1] = c0;
+        p[i - 1] = c0;
     if (i++ < size)
-        p[i-1] = c1;
+        p[i - 1] = c1;
     if (i++ < size)
-        p[i-1] = c2;
+        p[i - 1] = c2;
     if (i++ < size)
-        p[i-1] = c3;
+        p[i - 1] = c3;
     return i;
 }
 
-size_t base64_encode_buffer(const void *source, size_t source_size,
-                            char *dest, size_t dest_size,
-                            char pos62, char pos63)
+size_t base64_encode_buffer(const void *source, size_t source_size, char *dest,
+                            size_t dest_size, char pos62, char pos63)
 {
     size_t i = 0;
     const uint8_t *q = source;
@@ -85,8 +84,7 @@ size_t base64_encode_buffer(const void *source, size_t source_size,
     }
     if (q < tail) {
         bits = q[0] << 16 | q[1] << 8 | q[2];
-        i = put4(dest, i, dest_size,
-                 base64_char(bits >> 18, pos62, pos63),
+        i = put4(dest, i, dest_size, base64_char(bits >> 18, pos62, pos63),
                  base64_char(bits >> 12, pos62, pos63),
                  base64_char(bits >> 6, pos62, pos63),
                  base64_char(bits, pos62, pos63));
@@ -99,19 +97,14 @@ size_t base64_encode_buffer(const void *source, size_t source_size,
             break;
         case 1:
             bits = q[0] << 16;
-            i = put4(dest, i, dest_size,
-                     base64_char(bits >> 18, pos62, pos63),
-                     base64_char(bits >> 12, pos62, pos63),
-                     '=',
-                     '=');
+            i = put4(dest, i, dest_size, base64_char(bits >> 18, pos62, pos63),
+                     base64_char(bits >> 12, pos62, pos63), '=', '=');
             break;
         default:
             bits = q[0] << 16 | q[1] << 8;
-            i = put4(dest, i, dest_size,
-                     base64_char(bits >> 18, pos62, pos63),
+            i = put4(dest, i, dest_size, base64_char(bits >> 18, pos62, pos63),
                      base64_char(bits >> 12, pos62, pos63),
-                     base64_char(bits >> 6, pos62, pos63),
-                     '=');
+                     base64_char(bits >> 6, pos62, pos63), '=');
     }
     if (i < dest_size)
         dest[i] = '\0';
@@ -126,8 +119,8 @@ char *base64_encode_simple(const void *buffer, size_t size)
     if (encoding_size == -1)
         return NULL;
     char *result = fsalloc(encoding_size + 1);
-    (void) base64_encode_buffer(buffer, size, result,
-                                encoding_size + 1, -1, -1);
+    (void) base64_encode_buffer(buffer, size, result, encoding_size + 1, -1,
+                                -1);
     return result;
 }
 
@@ -163,8 +156,7 @@ static bool good_base64_tail(const char *tail, size_t tail_size,
             assert(false);
     }
     size_t padding_len = strlen(padding);
-    return tail_size >= padding_len &&
-        !strncmp(tail, padding, padding_len) &&
+    return tail_size >= padding_len && !strncmp(tail, padding, padding_len) &&
         good_termination(tail + padding_len, tail_size - padding_len,
                          ignore_wsp);
 }
@@ -189,9 +181,9 @@ static int8_t get_bits(char c, char pos62, char pos63, bool ignore_wsp)
     }
 }
 
-ssize_t base64_decode_buffer(const char *source, size_t source_size,
-                             void *dest, size_t dest_size,
-                             char pos62, char pos63, bool ignore_wsp)
+ssize_t base64_decode_buffer(const char *source, size_t source_size, void *dest,
+                             size_t dest_size, char pos62, char pos63,
+                             bool ignore_wsp)
 {
     size_t si = 0;
     uint8_t *buffer = dest;
@@ -202,8 +194,8 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size,
         pos62 = '+';
     if (pos63 == -1)
         pos63 = '/';
-    while (pi < dest_size && si < source_size &&
-           source[si] && source[si] != '=') {
+    while (pi < dest_size && si < source_size && source[si] &&
+           source[si] != '=') {
         int8_t new_bits = get_bits(source[si++], pos62, pos63, ignore_wsp);
         if (new_bits < 0) {
             if (new_bits == BASE64_ILLEGAL_WHITESPACE)

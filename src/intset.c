@@ -1,8 +1,10 @@
-#include <limits.h>
-#include "fsalloc.h"
 #include "intset.h"
-#include "intset_imp.h"
+
+#include <limits.h>
+
+#include "fsalloc.h"
 #include "fsdyn_version.h"
+#include "intset_imp.h"
 
 #ifndef LONG_BIT
 #define LONG_BIT (sizeof(unsigned long) * CHAR_BIT)
@@ -50,8 +52,7 @@ bool intset_has(intset_t *s, unsigned elem)
         return false;
 }
 
-static int intset_find_next(intset_t *s, unsigned elem,
-                            bool hit)
+static int intset_find_next(intset_t *s, unsigned elem, bool hit)
 {
     if (elem >= s->size)
         return -1;

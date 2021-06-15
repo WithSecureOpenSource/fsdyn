@@ -1,14 +1,15 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <assert.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
+
 #include "avltree.h"
 #include "avltree_imp.h"
 
 enum {
     K = 20,
-    N = 1000000
+    N = 1000000,
 };
 
 typedef struct {
@@ -72,8 +73,7 @@ static void emit_node(avl_elem_t *node, int depth)
     if (node == NULL) {
         indent(depth);
         printf("#\n");
-    }
-    else {
+    } else {
         emit_node(node->left, depth + 1);
         indent(depth);
         print_node(node);
@@ -81,8 +81,7 @@ static void emit_node(avl_elem_t *node, int depth)
     }
 }
 
-__attribute__((unused))
-static void print_tree(avl_tree_t *t)
+__attribute__((unused)) static void print_tree(avl_tree_t *t)
 {
     printf("===============================================================\n");
     emit_node(t->root, 0);
@@ -113,19 +112,17 @@ static void test_tree_size(avl_tree_t *t, int size)
     assert(t->size == size);
     int n = 0;
     avl_elem_t *node;
-    for (node = avl_tree_get_first(t);
-         node != NULL;
+    for (node = avl_tree_get_first(t); node != NULL;
          node = avl_tree_next(node)) {
-        //print_node(node);
+        // print_node(node);
         assert(n < size);
         n++;
     }
     assert(n == size);
     n = 0;
-    for (node = avl_tree_get_last(t);
-         node != NULL;
+    for (node = avl_tree_get_last(t); node != NULL;
          node = avl_tree_previous(node)) {
-        //print_node(node);
+        // print_node(node);
         assert(n < size);
         n++;
     }
@@ -187,8 +184,8 @@ static void remove_elements(avl_tree_t *t, int begin, int end)
 
 static void verify_tree(avl_tree_t *t, int size, const char *label)
 {
-    //printf("print_tree\n");
-    //print_tree();
+    // printf("print_tree\n");
+    // print_tree();
     printf("verify_structure (%s:%d)\n", label, size);
     verify_structure(t);
     printf("test_tree_size (%s:%d)\n", label, size);
@@ -217,8 +214,7 @@ static void enter_ordered_data(void)
 {
     tree_ordered = make_avl_tree(keycmp);
     avl_elem_t *node;
-    for (node = avl_tree_get_first(tree);
-         node != NULL;
+    for (node = avl_tree_get_first(tree); node != NULL;
          node = avl_tree_next(node)) {
         const element_t *element = avl_elem_get_value(node);
         avl_elem_t *old = avl_tree_put(tree_ordered, element->key, element);
@@ -230,8 +226,7 @@ static void enter_reverse_data(void)
 {
     tree_reverse = make_avl_tree(keycmp);
     avl_elem_t *node;
-    for (node = avl_tree_get_last(tree);
-         node != NULL;
+    for (node = avl_tree_get_last(tree); node != NULL;
          node = avl_tree_previous(node)) {
         const element_t *element = avl_elem_get_value(node);
         avl_elem_t *old = avl_tree_put(tree_reverse, element->key, element);
