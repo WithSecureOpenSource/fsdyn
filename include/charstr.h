@@ -58,7 +58,7 @@ uint64_t charstr_char_class(char c);
 char charstr_lcase_char(char c);
 char charstr_ucase_char(char c);
 
-/* The return value is well-defined only if c is a hexadecimal digit. */
+/* The return value is -1U if c is not a hexadecimal digit. */
 unsigned charstr_digit_value(char c);
 
 /* The returned string is allocated with fsalloc(). */
