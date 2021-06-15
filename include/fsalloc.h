@@ -15,16 +15,14 @@ typedef void (*fs_reallocator_counter_t)(int count);
 void fs_set_reallocator(fs_realloc_t realloc);
 fs_realloc_t fs_get_reallocator(void);
 
-void *fsalloc(size_t size)
-  __attribute__((warn_unused_result));
+void *fsalloc(size_t size) __attribute__((warn_unused_result));
 
 /* NULL is an acceptable argument value. */
 void fsfree(void *ptr);
 
 /* If size is zero, the memory element is deallocated. */
 void *fsrealloc(void *ptr, size_t size);
-void *fscalloc(size_t nmemb, size_t size)
-  __attribute__((warn_unused_result));
+void *fscalloc(size_t nmemb, size_t size) __attribute__((warn_unused_result));
 
 /* Set a reallocator counter. A reallocator counter is an optional
  * test facility offered to custom reallocators. The purpose of the

@@ -1,9 +1,10 @@
 #define _GNU_SOURCE
-#include <fsdyn/charstr.h>
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <fsdyn/charstr.h>
 
 static void dump_string(const char *str)
 {
@@ -21,9 +22,7 @@ static void dump_string(const char *str)
     fputc('\n', stderr);
 }
 
-static void dump_error(const char *name,
-                       const char *input,
-                       const char *actual,
+static void dump_error(const char *name, const char *input, const char *actual,
                        const char *expected)
 {
     fprintf(stderr, "Error: %s\n", name);
@@ -35,8 +34,7 @@ static void dump_error(const char *name,
     dump_string(expected);
 }
 
-static bool verify_normalization(const char *str,
-                                 const char *nfd_str,
+static bool verify_normalization(const char *str, const char *nfd_str,
                                  const char *nfc_str)
 {
     char nfd_output[1000];
@@ -86,7 +84,7 @@ static char *decode_column(const char *column)
     char *end = str + size;
     char *ptr = str;
     while (!list_empty(fields)) {
-        char *field = (char *)list_pop_first(fields);
+        char *field = (char *) list_pop_first(fields);
         long codepoint = strtol(field, NULL, 16);
         ptr = charstr_encode_utf8_codepoint(codepoint, ptr, end);
         fsfree(field);
@@ -100,7 +98,7 @@ static void decode_line(const char *line, char *strv[5])
 {
     int i;
     char *columns[6];
-    size_t n = charstr_split_into_array(line, ';', (char **)&columns, 5);
+    size_t n = charstr_split_into_array(line, ';', (char **) &columns, 5);
     assert(n == 5);
     for (i = 0; i < 5; i++) {
         strv[i] = decode_column(columns[i]);

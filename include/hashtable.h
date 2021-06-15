@@ -1,8 +1,9 @@
 #ifndef __FSDYN_HASHTABLE__
 #define __FSDYN_HASHTABLE__
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
+
 #include "integer.h"
 
 #ifdef __cplusplus
@@ -36,8 +37,7 @@ typedef struct hash_elem hash_elem_t;
  * The key comparator cmp() must return 0 for equal keys and a nonzero
  * value for unequal keys.
  */
-hash_table_t *make_hash_table(size_t capacity,
-                              uint64_t (*hash)(const void *),
+hash_table_t *make_hash_table(size_t capacity, uint64_t (*hash)(const void *),
                               int (*cmp)(const void *, const void *));
 
 /*

@@ -1,7 +1,8 @@
-#include <fsdyn/float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include <fsdyn/float.h>
 
 static bool double_to_integer(double value, long long *n)
 {

@@ -1,7 +1,8 @@
 #include <errno.h>
-#include <fsdyn/bytearray.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <fsdyn/bytearray.h>
 
 static ssize_t read_bytes(void *obj, void *buf, size_t count)
 {

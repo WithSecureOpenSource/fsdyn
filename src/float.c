@@ -16,7 +16,7 @@ bool binary64_to_integer(uint64_t value, long long *n)
     }
 
     size_t bits = 8 * sizeof *n;
-    int exp = (int)(value >> 52 & 0x7ff) - 1023;
+    int exp = (int) (value >> 52 & 0x7ff) - 1023;
     if (exp < 0 || exp >= bits - 1)
         return false;
 
@@ -53,7 +53,7 @@ bool binary64_to_unsigned(uint64_t value, unsigned long long *n)
         return false;
 
     size_t bits = 8 * sizeof *n;
-    int exp = (int)(value >> 52 & 0x7ff) - 1023;
+    int exp = (int) (value >> 52 & 0x7ff) - 1023;
     if (exp < 0 || exp >= bits)
         return false;
 

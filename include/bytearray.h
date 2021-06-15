@@ -25,9 +25,7 @@ void destroy_byte_array(byte_array_t *array);
 
 typedef ssize_t (*byte_array_read_cb)(void *obj, void *buf, size_t count);
 
-bool byte_array_copy(byte_array_t *array,
-                     size_t pos,
-                     const void *data,
+bool byte_array_copy(byte_array_t *array, size_t pos, const void *data,
                      size_t len);
 bool byte_array_copy_string(byte_array_t *array, size_t pos, const char *str);
 bool byte_array_append(byte_array_t *array, const void *data, size_t len);
@@ -37,8 +35,7 @@ bool byte_array_vappendf(byte_array_t *array, const char *fmt, va_list ap)
 bool byte_array_appendf(byte_array_t *array, const char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
 ssize_t byte_array_append_stream(byte_array_t *array,
-                                 byte_array_read_cb read_cb,
-                                 void *obj,
+                                 byte_array_read_cb read_cb, void *obj,
                                  size_t len);
 void byte_array_clear(byte_array_t *array);
 /*

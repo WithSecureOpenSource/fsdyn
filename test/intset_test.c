@@ -1,12 +1,13 @@
 #include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+
 #include <fsdyn/intset.h>
 
 enum {
-    N = 128
+    N = 128,
 };
 
 static bool elements[256];

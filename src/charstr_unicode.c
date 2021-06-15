@@ -1,4 +1,5 @@
 #include <errno.h>
+
 #include "charstr.h"
 #include "fsdyn_version.h"
 
@@ -29,14 +30,12 @@ int charstr_detect_unicode_normal_form(const char *s, const char *end,
 
 bool charstr_unicode_canonically_composed(const char *s, const char *end)
 {
-    return charstr_detect_unicode_normal_form(s, end,
-                                              UNICODE_NFC_DISALLOWED,
+    return charstr_detect_unicode_normal_form(s, end, UNICODE_NFC_DISALLOWED,
                                               UNICODE_NFC_MAYBE) == 0;
 }
 
 bool charstr_unicode_canonically_decomposed(const char *s, const char *end)
 {
-    return charstr_detect_unicode_normal_form(s, end,
-                                              UNICODE_NFD_DISALLOWED,
+    return charstr_detect_unicode_normal_form(s, end, UNICODE_NFD_DISALLOWED,
                                               UNICODE_NFD_MAYBE) == 0;
 }

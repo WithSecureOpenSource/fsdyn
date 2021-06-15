@@ -1,7 +1,8 @@
-#include "fsalloc.h"
 #include "list.h"
-#include "list_imp.h"
+
+#include "fsalloc.h"
 #include "fsdyn_version.h"
+#include "list_imp.h"
 
 list_t *make_list(void)
 {
@@ -49,8 +50,7 @@ list_elem_t *list_get_by_index(list_t *list, int idx)
 {
     int i;
     list_elem_t *element;
-    for (element = list->first, i = 0;
-         element != NULL && i != idx;
+    for (element = list->first, i = 0; element != NULL && i != idx;
          element = element->next, i++)
         ;
     return element;

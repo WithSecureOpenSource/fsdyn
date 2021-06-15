@@ -4,7 +4,7 @@ struct hash_table {
     size_t capacity, size;
     uint64_t (*hash)(const void *);
     int (*cmp)(const void *, const void *);
-    list_t **table;             /* of hash_elem_t */
+    list_t **table; /* of hash_elem_t */
 };
 
 struct hash_elem {

@@ -1,6 +1,8 @@
+#include "priority_queue.h"
+
 #include <limits.h>
 #include <stdint.h>
-#include "priority_queue.h"
+
 #include "fsalloc.h"
 #include "fsdyn_version.h"
 
@@ -13,15 +15,11 @@ struct priorq {
     size_t max_capacity;
 };
 
-static void dummy_reloc(const void *value, void *loc, void *obj)
-{
-}
+static void dummy_reloc(const void *value, void *loc, void *obj) {}
 
-priorq_t *make_priority_queue_2(int (*cmp)(const void *elem1,
-                                           const void *elem2, void *obj),
-                                void (*reloc)(const void *elem, void *loc,
-                                              void *obj),
-                                void *obj)
+priorq_t *make_priority_queue_2(
+    int (*cmp)(const void *elem1, const void *elem2, void *obj),
+    void (*reloc)(const void *elem, void *loc, void *obj), void *obj)
 {
     priorq_t *prq = fsalloc(sizeof *prq);
     prq->cmp = cmp;
@@ -105,7 +103,8 @@ static void lower(priorq_t *prq, size_t slot, const void *value)
         if (right >= prq->capacity ||
             prq->cmp(prq->storage[left], prq->storage[right], obj) < 0)
             branch = left;
-        else branch = right;
+        else
+            branch = right;
         if (prq->cmp(value, prq->storage[branch], obj) <= 0)
             break;
         assign(prq, slot, prq->storage[branch]);
@@ -121,8 +120,7 @@ const void *priorq_dequeue(priorq_t *prq)
             return NULL;
         case 1:
             return prq->storage[--prq->capacity];
-        default:
-            ;
+        default:;
     }
     const void *value = prq->storage[0];
     lower(prq, 0, prq->storage[--prq->capacity]);
