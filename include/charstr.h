@@ -250,6 +250,38 @@ char *charstr_unicode_decompose(const char *s, const char *end, char output[],
 char *charstr_unicode_recompose(const char *s, const char *end, char output[],
                                 const char *output_end);
 
+/* Find and return the next (extended) grapheme break. The encoding
+ * begins at s (which should be a grapheme break) and is limited by
+ * end (which is the end of the buffer, not the end of the codepoint
+ * encoding). If s is NULL, return NULL. If end is NULL, there is no
+ * bounds check.
+ *
+ * If an illegal UTF-8 encoding is encountered, return NULL. Surrogate
+ * codepoints are considered illegal.*/
+const char *charstr_skip_utf8_grapheme(const char *s, const char *end);
+
+/* You probably don't need these functions. They are used internally
+ * in the grapheme break algorithms. */
+bool charset_unicode_grapheme_break_prop_is_prepend(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_cr(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_lf(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_control(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_extend(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_ri(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_sm(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_l(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_v(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_t(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_lv(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_lvt(int codepoint);
+bool charset_unicode_grapheme_break_prop_is_zwj(int codepoint);
+bool charset_unicode_emoji_prop_is_emoji(int codepoint);
+bool charset_unicode_emoji_prop_is_emoji_presentation(int codepoint);
+bool charset_unicode_emoji_prop_is_emoji_modifier(int codepoint);
+bool charset_unicode_emoji_prop_is_emoji_modifier_base(int codepoint);
+bool charset_unicode_emoji_prop_is_emoji_component(int codepoint);
+bool charset_unicode_emoji_prop_is_extended_pictographic(int codepoint);
+
 /* Return a URL encoded string corresponding to the given byte:
  *  * ASCII 32 (SPC) yields "+"
  *  * digits and letters yield themselves as a one-character string

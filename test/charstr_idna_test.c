@@ -70,6 +70,7 @@ int main(int argc, const char *const *argv)
         destroy_list(parts);
     }
     free(line);
+    fclose(f);
     if (!ok)
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
