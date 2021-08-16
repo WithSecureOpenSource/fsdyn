@@ -28,6 +28,7 @@ env.StaticLibrary('fsdyn',
                     'charstr_unicode.c',
                     'charstr_decompose.c',
                     'charstr_recompose.c',
+                    'charstr_grapheme.c',
                     'fsalloc.c',
                     'priority_queue.c',
                     'unicode_categories.c',
@@ -36,7 +37,9 @@ env.StaticLibrary('fsdyn',
                     "unicode_canonical_combining_classes.c",
                     "unicode_allowed_in_normal_form.c",
                     "unicode_decomposition.c",
-                    "unicode_recomposition.c" ])
+                    "unicode_recomposition.c",
+                    "unicode_grapheme_break_table.c",
+                    "unicode_emoji_table.c" ])
 
 env.Program("gen_idna_table",
             [ "gen_idna_table.c",
@@ -48,6 +51,32 @@ env.Program("gen_idna_table",
 env.Command("idna_table.c",
             [ "gen_idna_table",
               "#idna/IdnaMappingTable.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Program("gen_grapheme_break_property",
+            [ "gen_grapheme_break_property.c",
+              "charstr.c",
+              "intset.c",
+              "list.c",
+              "fsalloc.c",
+              'fsdyn_version.c' ])
+
+env.Command("unicode_grapheme_break_table.c",
+            [ "gen_grapheme_break_property",
+              "#unicode/GraphemeBreakProperty.txt" ],
+            """$SOURCES >$TARGET""")
+
+env.Program("gen_emoji_property",
+            [ "gen_emoji_property.c",
+              "charstr.c",
+              "intset.c",
+              "list.c",
+              "fsalloc.c",
+              'fsdyn_version.c' ])
+
+env.Command("unicode_emoji_table.c",
+            [ "gen_emoji_property",
+              "#unicode/emoji/emoji-data.txt" ],
             """$SOURCES >$TARGET""")
 
 env.Command("unicode_categories.c",
