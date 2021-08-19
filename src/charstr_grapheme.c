@@ -2,9 +2,7 @@
 
 /* https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries */
 
-static const char *skip_trailer(const char *s1,
-                                const char *s2,
-                                int cp1,
+static const char *skip_trailer(const char *s1, const char *s2, int cp1,
                                 const char *end)
 {
     while (charset_unicode_grapheme_break_prop_is_extend(cp1) ||
@@ -20,10 +18,8 @@ static const char *skip_trailer(const char *s1,
     return s1;
 }
 
-static const char *skip_emoji_modifier_sequence(const char *s1,
-                                                const char *s2,
-                                                int cp1,
-                                                const char *end)
+static const char *skip_emoji_modifier_sequence(const char *s1, const char *s2,
+                                                int cp1, const char *end)
 {
     for (;;) {
         while (charset_unicode_grapheme_break_prop_is_extend(cp1)) {
@@ -53,10 +49,8 @@ static const char *skip_emoji_modifier_sequence(const char *s1,
     }
 }
 
-static const char *skip_emoji_flag_sequence(const char *s1,
-                                            const char *s2,
-                                            int cp1,
-                                            const char *end)
+static const char *skip_emoji_flag_sequence(const char *s1, const char *s2,
+                                            int cp1, const char *end)
 {
     if (!charset_unicode_grapheme_break_prop_is_ri(cp1))
         return skip_trailer(s1, s2, cp1, end);

@@ -1,17 +1,17 @@
 #if _POSIX_C_SOURCE < 200809L
 #define _GNU_SOURCE
 #endif
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include <fsdyn/charstr.h>
-#include <fsdyn/list.h>
 #include <fsdyn/integer.h>
+#include <fsdyn/list.h>
 
-static char *add_codepoint(const char *begin, const char *end,
-                           char *outp, char *outendp)
+static char *add_codepoint(const char *begin, const char *end, char *outp,
+                           const char *outendp)
 {
     if (!begin)
         return outp;

@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "intset.h"
 #include "charstr.h"
+#include "intset.h"
 
 enum {
     N_CP = 0x110000,
@@ -101,7 +101,8 @@ static void generate_category(intset_t *set, const char *cat)
     printf("\n"
            "bool charset_unicode_grapheme_break_prop_is_%s(int cp)\n"
            "{\n"
-           "    switch (cp) {\n", cat);
+           "    switch (cp) {\n",
+           cat);
     /* Condense long, sequential ranges */
     enum { CUT = 20 };
     int largest = -1;
@@ -119,7 +120,8 @@ static void generate_category(intset_t *set, const char *cat)
     printf("            return true;\n"
            "        default:\n"
            "            if (cp > %d)\n"
-           "                return false;\n", largest);
+           "                return false;\n",
+           largest);
     for (int cp = 0; cp < N_CP; cp++)
         if (intset_has(set, cp)) {
             int begin = cp;
@@ -130,7 +132,8 @@ static void generate_category(intset_t *set, const char *cat)
                 printf("            if (cp < %d)\n"
                        "                return false;\n"
                        "            if (cp < %d)\n"
-                       "                return true;\n", begin, end);
+                       "                return true;\n",
+                       begin, end);
         }
     printf("            return false;\n"
            "    }\n"
