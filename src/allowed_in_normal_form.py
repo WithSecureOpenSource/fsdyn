@@ -51,9 +51,15 @@ int charstr_allowed_unicode_normal_forms(int codepoint)
             else:
                 assert value == "Y"
         if disj:
-            sys.stdout.write("        case %d: return %s;\n" % (
-                codepoint, " | ".join(disj)))
-    sys.stdout.write(r"""        default: return 0;
+            sys.stdout.write("        case %d:\n" % codepoint)
+            line = "            return %s;" % " | ".join(disj)
+            while len(line) > 80:
+                n = line.rindex("|", 0, 80) + 1
+                sys.stdout.write("%s\n" % line[:n])
+                line = "               %s" % line[n:]
+            sys.stdout.write("%s\n" % line)
+    sys.stdout.write(r"""        default:
+            return 0;
     }
 }
 """)

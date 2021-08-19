@@ -4,7 +4,6 @@ import sys
 
 def main():
     sys.stdout.write("""#include <stddef.h>
-
 """)
     decompositions = set()
     for line in open(sys.argv[1]):
@@ -31,9 +30,12 @@ const int *_charstr_unicode_decomposition(int codepoint)
     for codepoint in range(0, 0x110000):
         if codepoint in decompositions:
             sys.stdout.write(
-                "        case %d: return decompose_%x;\n" % (
+                r"""        case %d:
+            return decompose_%x;
+""" % (
                     codepoint, codepoint))
-    sys.stdout.write(r"""        default: return NULL;
+    sys.stdout.write(r"""        default:
+            return NULL;
     }
 }
 """)

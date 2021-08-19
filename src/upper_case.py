@@ -26,15 +26,17 @@ int charstr_naive_ucase_unicode(int codepoint)
         if category == "Ll":
             try:
                 sys.stdout.write(
-                    "        case %d: return %d;\n" % (
-                        codepoint, int(line.split(";")[12], 16)))
+                    r"""        case %d:
+            return %d;
+""" % (codepoint, int(line.split(";")[12], 16)))
             except ValueError:
                 pass
         prev_cp = codepoint
     assert range_start is None
-    sys.stdout.write("""        default: return codepoint;
+    sys.stdout.write(r"""        default:
+            return codepoint;
     }
-}\n
+}
 """)
 
 if __name__ == '__main__':

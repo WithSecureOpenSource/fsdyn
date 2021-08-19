@@ -23,11 +23,15 @@ int charstr_unicode_canonical_combining_class(int codepoint)
             filler = "Cn"
             if descr.endswith(", First>"):
                 range_start = category
-        sys.stdout.write("        case %d: return %d;\n" % (
+        sys.stdout.write(
+            r"""        case %d:
+            return %d;
+""" % (
             codepoint, int(line.split(";")[3])))
         prev_cp = codepoint
     assert range_start is None
-    sys.stdout.write(r"""        default: return 0;
+    sys.stdout.write(r"""        default:
+            return 0;
     }
 }
 """)
