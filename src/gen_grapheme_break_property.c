@@ -106,6 +106,7 @@ static void generate_category(intset_t *set, const char *cat)
     /* Condense long, sequential ranges */
     enum { CUT = 20 };
     int largest = -1;
+    bool case_found = false;
     for (int cp = 0; cp < N_CP; cp++)
         if (intset_has(set, cp)) {
             int begin = cp;
@@ -114,11 +115,14 @@ static void generate_category(intset_t *set, const char *cat)
             int end = cp--;
             largest = cp;
             if (end - begin < CUT)
-                for (int n = begin; n < end; n++)
+                for (int n = begin; n < end; n++) {
+                    case_found = true;
                     printf("        case %d:\n", n);
+                }
         }
-    printf("            return true;\n"
-           "        default:\n"
+    if (case_found)
+        printf("            return true;\n");
+    printf("        default:\n"
            "            if (cp > %d)\n"
            "                return false;\n",
            largest);

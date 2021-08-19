@@ -28,7 +28,6 @@ def main():
                 recompositions[cc] = {}
             recompositions[cc][starter] = codepoint
     sys.stdout.write("""#include "charstr.h"
-
 """)
     emit_recompositions(recompositions)
 

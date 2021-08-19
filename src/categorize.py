@@ -60,9 +60,12 @@ def emit_binary(ranges, indentation):
 """ % (I, end, I, category))
             else:
                 sys.stdout.write(
-                    r"""%sif (codepoint < %d)
-%s    return codepoint >= %d ? UNICODE_CATEGORY_%s : UNICODE_CATEGORY_Cn;
-""" % (I, end, I, start, category))
+                    r"""%sif (codepoint < %d) {
+%s    if (codepoint >= %d)
+%s        return UNICODE_CATEGORY_%s;
+%s    return UNICODE_CATEGORY_Cn;
+%s}
+""" % (I, end, I, start, I, category, I, I))
         return
     middle = length // 5
     start, end, category = ranges[middle]
@@ -77,10 +80,11 @@ def emit_binary(ranges, indentation):
 """ % (I, category, I))
     else:
         sys.stdout.write(
-                    r"""%s    return codepoint >= %d """
-                    r"""? UNICODE_CATEGORY_%s : UNICODE_CATEGORY_Cn;
+            r"""%s    if (codepoint >= %d)
+%s        return UNICODE_CATEGORY_%s;
+%s    return UNICODE_CATEGORY_Cn;
 %s}
-""" % (I, start, category, I))
+""" % (I, start, I, category, I, I))
     emit_binary(ranges[middle + 1:], indentation)
 
 if __name__ == '__main__':
