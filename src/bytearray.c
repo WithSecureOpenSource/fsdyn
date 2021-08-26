@@ -194,3 +194,15 @@ size_t byte_array_size(byte_array_t *array)
 {
     return array->cursor;
 }
+
+char *byte_array_to_charstr(byte_array_t *array)
+{
+    char *str = array->data;
+    size_t len = array->cursor;
+
+    if (--array->ref_count) {
+        return charstr_dupsubstr(str, str + len);
+    }
+    fsfree(array);
+    return fsrealloc(str, len + 1);
+}

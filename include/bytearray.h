@@ -48,6 +48,11 @@ bool byte_array_resize(byte_array_t *array, size_t n, uint8_t c);
 const void *byte_array_data(byte_array_t *array);
 size_t byte_array_size(byte_array_t *array);
 
+/*
+ * Discards the byte array and returns a copy of its contents.
+ */
+char *byte_array_to_charstr(byte_array_t *array);
+
 #ifdef __cplusplus
 }
 
