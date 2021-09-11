@@ -116,14 +116,31 @@ unsigned binary64_decimal_digits(uint64_t integer);
  */
 ssize_t binary64_from_string(const char *buffer, size_t size, uint64_t *value);
 
-/* Create a binary64 floating point value corresponding to the given
+/*
+ * Create a binary64 floating point value corresponding to the given
  * arguments. If the value is too big for binary64, false is returned.
- * If the value is too small, a zero value is generated. */
+ * If the value is too small, a zero value is generated.
+ */
 bool binary64_from_decimal(binary64_type_t type,
                            bool negative,
                            uint64_t significand,
                            int32_t exponent,
                            uint64_t *value);
+
+/*
+ * A convenience function to parse a decimal floating point
+ * representation starting at the given string into the given
+ * arguments. See binary64_from_string() for the meaning of buffer,
+ * size, the return value and errno settings. See
+ * binary64_to_decimal() for the meaning of type, negative,
+ * significand and exponent. Additionally, *exact is set to true if
+ * *type == BINARY64_TYPE_NORMAL and *significand has not undergone
+ * any rounding.
+ */
+ssize_t binary64_parse_decimal(const char *buffer, size_t size,
+                               binary64_type_t *type, bool *negative,
+                               uint64_t *significand, int32_t *exponent,
+                               bool *exact);
 
 #ifdef __cplusplus
 }

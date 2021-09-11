@@ -245,7 +245,7 @@ static const char *parse_infinity(const char *p, const char *end,
 
 static const char *parse_big_unsigned(const char *p, const char *end,
                                       const char **start, uint64_t *value,
-                                      int *magnitude)
+                                      int *magnitude, bool *exact)
 {
     if (p == end || *p < '0' || *p > '9')
         return NULL;
@@ -261,6 +261,7 @@ static const char *parse_big_unsigned(const char *p, const char *end,
         uint64_t mul10 = 10 * n;
         uint64_t next = mul10 + digit;
         if (n > (uint64_t) -1 / 10 || next < mul10) { /* overflow? */
+            *exact = false;
             if (digit >= 5) {                         /* round up? */
                 if (n < (uint64_t) -1) {
                     n++;
@@ -299,12 +300,13 @@ static const char *normalize(const char *p, float_parts_t *dec)
 }
 
 static const char *parse_significand(const char *p, const char *end,
-                                     float_parts_t *dec)
+                                     float_parts_t *dec, bool *exact)
 {
     dec->significand = 0;
     int magnitude = 0;
     const char *start = NULL;
-    p = parse_big_unsigned(p, end, &start, &dec->significand, &magnitude);
+    p = parse_big_unsigned(p, end, &start, &dec->significand, &magnitude,
+                           exact);
     if (!p)
         return NULL;
     if (p == end || *p != '.') {
@@ -317,7 +319,8 @@ static const char *parse_significand(const char *p, const char *end,
         return normalize(p, dec);
     }
     int integral_magnitude = magnitude;
-    p = parse_big_unsigned(p + 1, end, &start, &dec->significand, &magnitude);
+    p = parse_big_unsigned(p + 1, end, &start, &dec->significand, &magnitude,
+                           exact);
     if (!p)
         return NULL;
     if (!dec->significand)
@@ -334,9 +337,9 @@ static const char *parse_significand(const char *p, const char *end,
 }
 
 static const char *parse_normal(const char *p, const char *end,
-                                float_parts_t *dec)
+                                float_parts_t *dec, bool *exact)
 {
-    p = parse_significand(p, end, dec);
+    p = parse_significand(p, end, dec, exact);
     if (!p)
         return NULL;
     if (p == end || *p != 'e' && *p != 'E') {
@@ -352,7 +355,8 @@ static const char *parse_normal(const char *p, const char *end,
     const char *start = NULL;
     uint64_t exponent = 0;
     int magnitude = 0;
-    p = parse_big_unsigned(p, end, &start, &exponent, &magnitude);
+    bool exact_exp = true;
+    p = parse_big_unsigned(p, end, &start, &exponent, &magnitude, &exact_exp);
     if (!p)
         return NULL;
     if (!dec->significand) {
@@ -360,26 +364,30 @@ static const char *parse_normal(const char *p, const char *end,
         return p;
     }
     if (exp_sign) {
-        if (p - start != magnitude) { /* underflow? */
+        if (!exact_exp) { /* underflow? */
+            errno = ERANGE;
             dec->type = BINARY64_TYPE_ZERO;
             return p;
         }
         int64_t e = dec->exponent - exponent;
         dec->exponent = e;
         if (dec->exponent != e) { /* underflow? */
+            errno = ERANGE;
             dec->type = BINARY64_TYPE_ZERO;
             return p;
         }
         dec->type = BINARY64_TYPE_NORMAL;
         return p;
     }
-    if (p - start != magnitude) { /* overflow? */
+    if (!exact_exp) { /* overflow? */
+        errno = ERANGE;
         dec->type = BINARY64_TYPE_INFINITY;
         return p;
     }
     int64_t e = dec->exponent + exponent;
     dec->exponent = e;
     if (dec->exponent != e) { /* overflow? */
+        errno = ERANGE;
         dec->type = BINARY64_TYPE_INFINITY;
         return p;
     }
@@ -388,7 +396,7 @@ static const char *parse_normal(const char *p, const char *end,
 }
 
 static const char *parse_float(const char *buffer, const char *end,
-                               float_parts_t *dec)
+                               float_parts_t *dec, bool *exact)
 {
     const char *p = buffer;
     if (p != end && (*p == '+' || *p == '-'))
@@ -405,8 +413,27 @@ static const char *parse_float(const char *buffer, const char *end,
         case 'i':
             return parse_infinity(p, end, dec);
         default:
-            return parse_normal(p, end, dec);
+            return parse_normal(p, end, dec, exact);
     }
+}
+
+ssize_t binary64_parse_decimal(const char *buffer, size_t size,
+                               binary64_type_t *type, bool *negative,
+                               uint64_t *significand, int32_t *exponent,
+                               bool *exact)
+{
+    float_parts_t dec;
+    *exact = true;
+    const char *p = parse_float(buffer, buffer + size, &dec, exact);
+    if (!p) {
+        errno = EILSEQ;
+        return -1;
+    }
+    *type = dec.type;
+    *negative = dec.negative;
+    *significand = dec.significand;
+    *exponent = dec.exponent;
+    return p - buffer;
 }
 
 bool binary64_from_decimal(binary64_type_t type, bool negative,
@@ -424,7 +451,8 @@ ssize_t binary64_from_string(const char *buffer, size_t size, uint64_t *value)
 {
     float_parts_t dec;
     const char *end = buffer + size;
-    const char *p = parse_float(buffer, end, &dec);
+    bool exact = true;
+    const char *p = parse_float(buffer, end, &dec, &exact);
     if (!p) {
         errno = EILSEQ;
         return -1;
