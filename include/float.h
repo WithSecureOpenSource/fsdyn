@@ -63,36 +63,40 @@ typedef enum {
     BINARY64_TYPE_NORMAL,
 } binary64_type_t;
 
+/* binary64_float_t is used to represent floating point values for
+ * arbitrary bases and wide ranges. The base itself is not
+ * included. */
+typedef struct {
+    binary64_type_t type;
+    bool negative;
+    uint64_t significand; /* only meaningful for BINARY_TYPE_NORMAL */
+    int32_t exponent;     /* only meaningful for BINARY_TYPE_NORMAL */
+} binary64_float_t;
+
 /*
  * Convert the binary64 floating point value to decimal, exponential
  * components. The components depend on the value type. The "negative"
- * argument is set for all value types. The other arguments are only
- * defined for BINARY64_TYPE_NORMAL.
+ * argument is set for all value types.
  *
  * If case of BINARY64_TYPE_NORMAL, the components map back to value
  * as follows:
  *
  *    sprintf(buffer, "%s%llue%d",
- *            *negative ? "-" : "",
- *            (unsigned long long) *significand,
- *            (int) *exponent);
+ *            dec->negative ? "-" : "",
+ *            (unsigned long long) dec->significand,
+ *            (int) dec->exponent);
  *    value == strtod(buffer, NULL);
  *
  * Additionally, the significand is guaranteed not to be divisible by
  * 10.
  */
-void binary64_to_decimal(uint64_t value,
-                         binary64_type_t *type,
-                         bool *negative,
-                         uint64_t *significand,
-                         int32_t *exponent);
+void binary64_to_decimal(uint64_t value, binary64_float_t *dec);
 
 /*
  * A convenience function to find the number of decimal digits needed
  * to represent the given unsigned integer. It can be used together
- * with binary64_to_decimal() to create alternative alternative
- * formatting outputs by determining the width of the significand and
- * the exponent.
+ * with binary64_to_decimal() to create alternative formatting outputs
+ * by determining the width of the significand and the exponent.
  */
 unsigned binary64_decimal_digits(uint64_t integer);
 
@@ -100,7 +104,8 @@ unsigned binary64_decimal_digits(uint64_t integer);
  * Parse a valid decimal floating point representation starting at the
  * given string into a binary64 value. Parsing ends when the first
  * illegal character (e.g. NUL or punctuation) is encountered or the
- * end of the buffer is reached.
+ * end of the buffer is reached. The return value indicates how many
+ * characters were consumed in parsing.
  *
  * A negative value is returned and errno is set to EILSEQ if the
  * representation is syntactically illegal. For example, 3 is returned
@@ -118,29 +123,24 @@ ssize_t binary64_from_string(const char *buffer, size_t size, uint64_t *value);
 
 /*
  * Create a binary64 floating point value corresponding to the given
- * arguments. If the value is too big for binary64, false is returned.
- * If the value is too small, a zero value is generated.
+ * decimal decomposition and return true. If the value is
+ * BINARY64_TYPE_NORMAL but too big for binary64, false is returned
+ * and an infinite value is generated. If the value is too small,
+ * false is returned and a zero value is generated.
  */
-bool binary64_from_decimal(binary64_type_t type,
-                           bool negative,
-                           uint64_t significand,
-                           int32_t exponent,
-                           uint64_t *value);
+bool binary64_from_decimal(const binary64_float_t *dec, uint64_t *value);
 
 /*
  * A convenience function to parse a decimal floating point
  * representation starting at the given string into the given
  * arguments. See binary64_from_string() for the meaning of buffer,
  * size, the return value and errno settings. See
- * binary64_to_decimal() for the meaning of type, negative,
- * significand and exponent. Additionally, *exact is set to true if
- * *type == BINARY64_TYPE_NORMAL and *significand has not undergone
- * any rounding.
+ * binary64_to_decimal() for the meaning of "dec". Additionally,
+ * *exact is set to true if dec->type == BINARY64_TYPE_NORMAL and
+ * dec->significand has not undergone any rounding.
  */
 ssize_t binary64_parse_decimal(const char *buffer, size_t size,
-                               binary64_type_t *type, bool *negative,
-                               uint64_t *significand, int32_t *exponent,
-                               bool *exact);
+                               binary64_float_t *dec, bool *exact);
 
 #ifdef __cplusplus
 }

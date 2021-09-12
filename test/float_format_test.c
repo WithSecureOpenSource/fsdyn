@@ -49,12 +49,9 @@ static bool test_parse(const char *number, double value, const char *end)
                 (int) count);
         return false;
     }
-    binary64_type_t type;
-    bool negative;
-    uint64_t significand;
-    int32_t exponent;
-    binary64_to_decimal(v.bits, &type, &negative, &significand, &exponent);
-    switch (type) {
+    binary64_float_t dec;
+    (void) binary64_to_decimal(v.bits, &dec);
+    switch (dec.type) {
         case BINARY64_TYPE_NAN:
         case BINARY64_TYPE_INFINITY:
         case BINARY64_TYPE_ZERO:

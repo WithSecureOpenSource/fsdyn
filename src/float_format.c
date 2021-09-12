@@ -17,14 +17,6 @@
 #include "fsalloc.h"
 #include "fsdyn_version.h"
 
-/* float_parts_t is used both for base 2 and base 10 floats */
-typedef struct {
-    binary64_type_t type;
-    bool negative;
-    uint64_t significand;
-    int32_t exponent;
-} float_parts_t;
-
 enum {
     DOUBLE_MANTISSA_BITS = 52,
     DOUBLE_EXPONENT_BITS = 11,
@@ -157,7 +149,7 @@ static uint32_t floor_log2(uint64_t value)
     return 63 - __builtin_clzll(value);
 }
 
-static bool ryu_encode(const float_parts_t *dec, uint64_t *result)
+static bool ryu_encode(const binary64_float_t *dec, uint64_t *result)
 {
     int32_t e2;
     uint64_t m2;
@@ -203,7 +195,8 @@ static bool ryu_encode(const float_parts_t *dec, uint64_t *result)
     return true;
 }
 
-static const char *parse_nan(const char *p, const char *end, float_parts_t *dec)
+static const char *parse_nan(const char *p, const char *end,
+                             binary64_float_t *dec)
 {
     dec->type = BINARY64_TYPE_NAN;
     p++;
@@ -216,7 +209,7 @@ static const char *parse_nan(const char *p, const char *end, float_parts_t *dec)
 }
 
 static const char *parse_infinity(const char *p, const char *end,
-                                  float_parts_t *dec)
+                                  binary64_float_t *dec)
 {
     dec->type = BINARY64_TYPE_INFINITY;
     p++;
@@ -262,7 +255,7 @@ static const char *parse_big_unsigned(const char *p, const char *end,
         uint64_t next = mul10 + digit;
         if (n > (uint64_t) -1 / 10 || next < mul10) { /* overflow? */
             *exact = false;
-            if (digit >= 5) {                         /* round up? */
+            if (digit >= 5) { /* round up? */
                 if (n < (uint64_t) -1) {
                     n++;
                 } else {
@@ -282,7 +275,7 @@ static const char *parse_big_unsigned(const char *p, const char *end,
     return p;
 }
 
-static const char *normalize(const char *p, float_parts_t *dec)
+static const char *normalize(const char *p, binary64_float_t *dec)
 {
     uint32_t e = dec->exponent;
     while (dec->significand % 100 == 0) {
@@ -300,7 +293,7 @@ static const char *normalize(const char *p, float_parts_t *dec)
 }
 
 static const char *parse_significand(const char *p, const char *end,
-                                     float_parts_t *dec, bool *exact)
+                                     binary64_float_t *dec, bool *exact)
 {
     dec->significand = 0;
     int magnitude = 0;
@@ -337,7 +330,7 @@ static const char *parse_significand(const char *p, const char *end,
 }
 
 static const char *parse_normal(const char *p, const char *end,
-                                float_parts_t *dec, bool *exact)
+                                binary64_float_t *dec, bool *exact)
 {
     p = parse_significand(p, end, dec, exact);
     if (!p)
@@ -395,107 +388,94 @@ static const char *parse_normal(const char *p, const char *end,
     return p;
 }
 
-static const char *parse_float(const char *buffer, const char *end,
-                               float_parts_t *dec, bool *exact)
+ssize_t binary64_parse_decimal(const char *buffer, size_t size,
+                               binary64_float_t *dec, bool *exact)
 {
     const char *p = buffer;
+    const char *end = buffer + size;
+    *exact = true;
     if (p != end && (*p == '+' || *p == '-'))
         dec->negative = *p++ == '-';
     else
         dec->negative = 0;
-    if (p == end)
-        return NULL;
+    if (p == end) {
+        errno = EILSEQ;
+        return -1;
+    }
     switch (*p) {
         case 'N':
         case 'n':
-            return parse_nan(p, end, dec);
+            p = parse_nan(p, end, dec);
+            break;
         case 'I':
         case 'i':
-            return parse_infinity(p, end, dec);
+            p = parse_infinity(p, end, dec);
+            break;
         default:
-            return parse_normal(p, end, dec, exact);
+            p = parse_normal(p, end, dec, exact);
     }
-}
-
-ssize_t binary64_parse_decimal(const char *buffer, size_t size,
-                               binary64_type_t *type, bool *negative,
-                               uint64_t *significand, int32_t *exponent,
-                               bool *exact)
-{
-    float_parts_t dec;
-    *exact = true;
-    const char *p = parse_float(buffer, buffer + size, &dec, exact);
     if (!p) {
         errno = EILSEQ;
         return -1;
     }
-    *type = dec.type;
-    *negative = dec.negative;
-    *significand = dec.significand;
-    *exponent = dec.exponent;
     return p - buffer;
 }
 
-bool binary64_from_decimal(binary64_type_t type, bool negative,
-                           uint64_t significand, int32_t exponent,
-                           uint64_t *value)
+bool binary64_from_decimal(const binary64_float_t *dec, uint64_t *value)
 {
-    float_parts_t dec = { .type = type,
-                          .negative = negative,
-                          .significand = significand,
-                          .exponent = exponent };
-    return ryu_encode(&dec, value);
+    switch (dec->type) {
+        case BINARY64_TYPE_NAN:
+            if (dec->negative)
+                *value = BINARY64_CONST_S_NAN;
+            else
+                *value = BINARY64_CONST_Q_NAN;
+            return true;
+        case BINARY64_TYPE_INFINITY:
+            if (dec->negative)
+                *value = BINARY64_CONST_NEG_INF;
+            else
+                *value = BINARY64_CONST_POS_INF;
+            return true;
+        case BINARY64_TYPE_ZERO:
+            if (dec->negative)
+                *value = BINARY64_CONST_NEG_ZERO;
+            else
+                *value = BINARY64_CONST_ZERO;
+            return true;
+        default:
+            if (dec->exponent < -324) {
+                if (dec->negative)
+                    *value = BINARY64_CONST_NEG_ZERO;
+                else
+                    *value = BINARY64_CONST_ZERO;
+                return false;
+            } else if (dec->exponent > 308 || !ryu_encode(dec, value)) {
+                if (dec->negative)
+                    *value = BINARY64_CONST_NEG_INF;
+                else
+                    *value = BINARY64_CONST_POS_INF;
+                return false;
+            } else if (*value == 0)
+                return false;
+            return true;
+    }
 }
 
 ssize_t binary64_from_string(const char *buffer, size_t size, uint64_t *value)
 {
-    float_parts_t dec;
-    const char *end = buffer + size;
-    bool exact = true;
-    const char *p = parse_float(buffer, end, &dec, &exact);
-    if (!p) {
+    binary64_float_t dec;
+    bool exact;
+    ssize_t count = binary64_parse_decimal(buffer, size, &dec, &exact);
+    if (count < 0) {
         errno = EILSEQ;
         return -1;
     }
-    switch (dec.type) {
-        case BINARY64_TYPE_NAN:
-            if (dec.negative)
-                *value = BINARY64_CONST_S_NAN;
-            else
-                *value = BINARY64_CONST_Q_NAN;
-            break;
-        case BINARY64_TYPE_INFINITY:
-            if (dec.negative)
-                *value = BINARY64_CONST_NEG_INF;
-            else
-                *value = BINARY64_CONST_POS_INF;
-            break;
-        case BINARY64_TYPE_ZERO:
-            if (dec.negative)
-                *value = BINARY64_CONST_NEG_ZERO;
-            else
-                *value = BINARY64_CONST_ZERO;
-            break;
-        default:
-            if (dec.exponent < -324) {
-                if (dec.negative)
-                    *value = BINARY64_CONST_NEG_ZERO;
-                else
-                    *value = BINARY64_CONST_ZERO;
-                errno = ERANGE;
-            } else if (dec.exponent > 308 || !ryu_encode(&dec, value)) {
-                if (dec.negative)
-                    *value = BINARY64_CONST_NEG_INF;
-                else
-                    *value = BINARY64_CONST_POS_INF;
-                errno = ERANGE;
-            } else if (*value == 0)
-                errno = ERANGE;
-    }
-    return p - buffer;
+    if (!binary64_from_decimal(&dec, value))
+        errno = ERANGE;
+    return count;
 }
 
-static void decode_nontrivial(const float_parts_t *ieee, float_parts_t *dec)
+static void ryu_decode(const binary64_float_t *ieee, binary64_float_t *dec)
 {
     int32_t e2;
     uint64_t m2;
@@ -616,7 +596,7 @@ static void decode_nontrivial(const float_parts_t *ieee, float_parts_t *dec)
     dec->exponent = e10 + removed;
 }
 
-static void ieee64_breakup(uint64_t value, float_parts_t *ieee)
+static void ieee64_breakup(uint64_t value, binary64_float_t *ieee)
 {
     ieee->negative = value >> DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS & 1;
     ieee->significand = value & ((uint64_t) 1 << DOUBLE_MANTISSA_BITS) - 1;
@@ -633,9 +613,9 @@ static void ieee64_breakup(uint64_t value, float_parts_t *ieee)
         ieee->type = BINARY64_TYPE_ZERO;
 }
 
-static void ryu_decode(uint64_t value, float_parts_t *dec)
+void binary64_to_decimal(uint64_t value, binary64_float_t *dec)
 {
-    float_parts_t ieee;
+    binary64_float_t ieee;
     ieee64_breakup(value, &ieee);
     dec->type = ieee.type;
     dec->negative = ieee.negative;
@@ -651,18 +631,7 @@ static void ryu_decode(uint64_t value, float_parts_t *dec)
             return;
         }
     }
-    decode_nontrivial(&ieee, dec);
-}
-
-void binary64_to_decimal(uint64_t value, binary64_type_t *type, bool *negative,
-                         uint64_t *significand, int32_t *exponent)
-{
-    float_parts_t dec;
-    ryu_decode(value, &dec);
-    *type = dec.type;
-    *negative = dec.negative;
-    *significand = dec.significand;
-    *exponent = dec.exponent;
+    ryu_decode(&ieee, dec);
 }
 
 static void emit_1_digit(char *p, uint32_t n)
@@ -724,7 +693,7 @@ unsigned binary64_decimal_digits(uint64_t integer)
         (integer >= DECIMAL_BOUNDARIES[slot].cutoff);
 }
 
-static size_t format_normal(const float_parts_t *dec, char buffer[])
+static size_t format_normal(const binary64_float_t *dec, char buffer[])
 {
     char *p = buffer;
     if (dec->negative)
@@ -784,8 +753,8 @@ static size_t format_normal(const float_parts_t *dec, char buffer[])
 
 size_t binary64_format(uint64_t value, char buffer[BINARY64_MAX_FORMAT_SPACE])
 {
-    float_parts_t dec;
-    ryu_decode(value, &dec);
+    binary64_float_t dec;
+    binary64_to_decimal(value, &dec);
     if (dec.type == BINARY64_TYPE_NORMAL)
         return format_normal(&dec, buffer);
     if (dec.negative)
