@@ -751,35 +751,32 @@ static size_t format_normal(const binary64_float_t *dec, char buffer[])
     return p - buffer;
 }
 
+#define STRING_WITH_SIZE(s) { s, sizeof (s) - 1}
+
+typedef struct {
+    const char *name;
+    size_t size;
+} string_with_size_t;
+
+static const string_with_size_t special_value_names[][2] = {
+    [BINARY64_TYPE_NAN][false] = STRING_WITH_SIZE("nan"),
+    [BINARY64_TYPE_NAN][true] = STRING_WITH_SIZE("-nan"),
+    [BINARY64_TYPE_INFINITY][false] = STRING_WITH_SIZE("infinity"),
+    [BINARY64_TYPE_INFINITY][true] = STRING_WITH_SIZE("-infinity"),
+    [BINARY64_TYPE_ZERO][false] = STRING_WITH_SIZE("0"),
+    [BINARY64_TYPE_ZERO][true] = STRING_WITH_SIZE("-0.0")
+};
+
 size_t binary64_format(uint64_t value, char buffer[BINARY64_MAX_FORMAT_SPACE])
 {
     binary64_float_t dec;
     binary64_to_decimal(value, &dec);
     if (dec.type == BINARY64_TYPE_NORMAL)
         return format_normal(&dec, buffer);
-    if (dec.negative)
-        switch (dec.type) {
-            case BINARY64_TYPE_NAN:
-                strcpy(buffer, "-nan");
-                return 4;
-            case BINARY64_TYPE_INFINITY:
-                strcpy(buffer, "-infinity");
-                return 9;
-            default:
-                strcpy(buffer, "-0.0");
-                return 4;
-        }
-    switch (dec.type) {
-        case BINARY64_TYPE_NAN:
-            strcpy(buffer, "nan");
-            return 3;
-        case BINARY64_TYPE_INFINITY:
-            strcpy(buffer, "infinity");
-            return 8;
-        default:
-            strcpy(buffer, "0");
-            return 1;
-    }
+    const string_with_size_t *special =
+        &special_value_names[dec.type][dec.negative];
+    strcpy(buffer, special->name);
+    return special->size;
 }
 
 char *binary64_to_string(uint64_t value)
