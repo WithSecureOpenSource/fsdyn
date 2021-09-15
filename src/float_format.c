@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <memory.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "float.h"
 #include "float_tables.h"
@@ -751,7 +752,10 @@ static size_t format_normal(const binary64_float_t *dec, char buffer[])
     return p - buffer;
 }
 
-#define STRING_WITH_SIZE(s) { s, sizeof (s) - 1}
+#define STRING_WITH_SIZE(s) \
+    {                       \
+        s, sizeof(s) - 1    \
+    }
 
 typedef struct {
     const char *name;
