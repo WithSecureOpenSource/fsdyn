@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <memory.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include "float.h"
 #include "float_tables.h"
