@@ -421,6 +421,28 @@ ssize_t binary64_parse_decimal(const char *buffer, size_t size,
     return p - buffer;
 }
 
+static bool scale_back(const binary64_float_t *dec, binary64_float_t *dec2)
+{
+    *dec2 = *dec;
+    const uint64_t ryu_overflow = (uint64_t) 1 << 56;
+    if (dec->significand < ryu_overflow)
+        return true;
+    if (dec->significand >= ryu_overflow * 100) {
+        dec2->significand = dec->significand / 1000 +
+            (dec->significand % 1000 >= 500);
+        dec2->exponent = (uint32_t) dec2->exponent + 3;
+    } else if (dec->significand >= ryu_overflow * 10) {
+        dec2->significand = dec->significand / 100 +
+            (dec->significand % 100 >= 50);
+        dec2->exponent = (uint32_t) dec2->exponent + 2;
+    } else {
+        dec2->significand = dec->significand / 10 +
+            (dec->significand % 10 >= 5);
+        dec2->exponent = (uint32_t) dec2->exponent + 1;
+    }
+    return dec2->exponent > dec->exponent;
+}
+
 bool binary64_from_decimal(const binary64_float_t *dec, uint64_t *value)
 {
     switch (dec->type) {
@@ -442,15 +464,22 @@ bool binary64_from_decimal(const binary64_float_t *dec, uint64_t *value)
             else
                 *value = BINARY64_CONST_ZERO;
             return true;
-        default:
-            if (dec->exponent < -324) {
-                if (dec->negative)
+        default: {
+            binary64_float_t dec2;
+            if (!scale_back(dec, &dec2)) {
+                if (dec2.negative)
+                    *value = BINARY64_CONST_NEG_INF;
+                else
+                    *value = BINARY64_CONST_POS_INF;
+                return false;
+            } else if (dec2.exponent < -324) {
+                if (dec2.negative)
                     *value = BINARY64_CONST_NEG_ZERO;
                 else
                     *value = BINARY64_CONST_ZERO;
                 return false;
-            } else if (dec->exponent > 308 || !ryu_encode(dec, value)) {
-                if (dec->negative)
+            } else if (dec2.exponent > 308 || !ryu_encode(&dec2, value)) {
+                if (dec2.negative)
                     *value = BINARY64_CONST_NEG_INF;
                 else
                     *value = BINARY64_CONST_POS_INF;
@@ -458,6 +487,7 @@ bool binary64_from_decimal(const binary64_float_t *dec, uint64_t *value)
             } else if (*value == 0)
                 return false;
             return true;
+        }
     }
 }
 
