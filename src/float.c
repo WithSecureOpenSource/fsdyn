@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include "fsdyn_version.h"
+
 bool binary64_to_integer(uint64_t value, long long *n)
 {
     if (!(value << 1)) {
