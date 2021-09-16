@@ -293,23 +293,6 @@ skip_tail:
     return p;
 }
 
-static const char *normalize(const char *p, binary64_float_t *dec)
-{
-    uint32_t e = dec->exponent;
-    while (dec->significand % 100 == 0) {
-        dec->significand /= 100;
-        e += 2;
-    }
-    if (dec->significand % 10 == 0) {
-        dec->significand /= 10;
-        e++;
-    }
-    if ((int32_t) e < dec->exponent) /* overflow? */
-        return NULL;
-    dec->exponent = e;
-    return p;
-}
-
 static const char *parse_significand(const char *p, const char *end,
                                      binary64_float_t *dec, bool *exact)
 {
@@ -327,7 +310,7 @@ static const char *parse_significand(const char *p, const char *end,
         dec->exponent = e;
         if (dec->exponent != e) /* overflow? */
             return NULL;
-        return normalize(p, dec);
+        return p;
     }
     int integral_magnitude = magnitude + trailing_zeros;
     p = parse_big_unsigned(p + 1, end, &start, &dec->significand, &magnitude,
@@ -338,13 +321,13 @@ static const char *parse_significand(const char *p, const char *end,
         return p;
     if (integral_magnitude) {
         dec->exponent = integral_magnitude - magnitude;
-        return normalize(p, dec);
+        return p;
     }
     size_t e = p - start - 1;
     dec->exponent = -e;
     if (-dec->exponent != e) /* overflow? */
         return NULL;
-    return normalize(p, dec);
+    return p;
 }
 
 static const char *parse_normal(const char *p, const char *end,
@@ -679,7 +662,14 @@ void binary64_to_decimal(uint64_t value, binary64_float_t *dec)
         if (!(m2 & ((uint64_t) 1 << e2) - 1)) {
             dec->significand = m2 >> e2;
             dec->exponent = 0;
-            (void) normalize(NULL, dec);
+            while (dec->significand % 100 == 0) {
+                dec->significand /= 100;
+                dec->exponent += 2;
+            }
+            if (dec->significand % 10 == 0) {
+                dec->significand /= 10;
+                dec->exponent++;
+            }
             return;
         }
     }
