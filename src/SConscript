@@ -1,4 +1,4 @@
-Import('env')
+Import('env', 'host_env')
 import os
  
 env.Command('fsdyn_version.c', [],
@@ -8,6 +8,7 @@ env.Command('fsdyn_version.c', [],
 env['CCFLAGS'] += ' -fPIC'      # make objects usable for shared libs
  
 env['CPPPATH'] = [ '#include' ]
+host_env['CPPPATH'] = [ '#include', '.' ]
  
 env.ParseConfig(env['CONFIG_PARSER'])
 
@@ -42,38 +43,45 @@ env.StaticLibrary('fsdyn',
                     "unicode_grapheme_break_table.c",
                     "unicode_emoji_table.c" ])
 
-env.Program("gen_idna_table",
-            [ "gen_idna_table.c",
-              "charstr.c",
+env.Install("host",
+            [ "charstr.c",
+              "intset.c",
               "list.c",
               "fsalloc.c",
-              'fsdyn_version.c' ])
+              "fsdyn_version.c" ])
+
+host_env.Program("gen_idna_table",
+                 [ "gen_idna_table.c",
+                   "host/charstr.c",
+                   "host/list.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
 
 env.Command("idna_table.c",
             [ "gen_idna_table",
               "#idna/IdnaMappingTable.txt" ],
             """$SOURCES >$TARGET""")
 
-env.Program("gen_grapheme_break_property",
-            [ "gen_grapheme_break_property.c",
-              "charstr.c",
-              "intset.c",
-              "list.c",
-              "fsalloc.c",
-              'fsdyn_version.c' ])
+host_env.Program("gen_grapheme_break_property",
+                 [ "gen_grapheme_break_property.c",
+                   "host/charstr.c",
+                   "host/intset.c",
+                   "host/list.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
 
 env.Command("unicode_grapheme_break_table.c",
             [ "gen_grapheme_break_property",
               "#unicode/GraphemeBreakProperty.txt" ],
             """$SOURCES >$TARGET""")
 
-env.Program("gen_emoji_property",
-            [ "gen_emoji_property.c",
-              "charstr.c",
-              "intset.c",
-              "list.c",
-              "fsalloc.c",
-              'fsdyn_version.c' ])
+host_env.Program("gen_emoji_property",
+                 [ "gen_emoji_property.c",
+                   "host/charstr.c",
+                   "host/intset.c",
+                   "host/list.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
 
 env.Command("unicode_emoji_table.c",
             [ "gen_emoji_property",
