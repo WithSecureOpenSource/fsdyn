@@ -1,27 +1,10 @@
 import os
+import fsenv
 
 DIRECTORIES = [
     'src',
     'test',
     'components/avltree' ]
-
-def target_architectures():
-    archs = os.getenv('FSARCHS', None)
-    if archs:
-        return archs.split(',')
-
-    arch_map = {
-        ('Darwin', 'arm64'): ['darwin'],
-        ('Darwin', 'x86_64'): ['darwin'],
-        ('FreeBSD', 'amd64'): ['freebsd_amd64'],
-        ('Linux', 'i686'): ['linux32'],
-        ('Linux', 'x86_64'): ['linux64'],
-        ('OpenBSD', 'amd64'): ['openbsd_amd64'],
-    }
-
-    uname_os, _, _, _, uname_cpu = os.uname()
-    assert (uname_os, uname_cpu) in arch_map
-    return arch_map[(uname_os, uname_cpu)]
 
 TARGET_DEFINES = {
     'freebsd_amd64': [],
@@ -39,68 +22,34 @@ TARGET_FLAGS = {
     'darwin': '-mmacosx-version-min=10.13 '
 }
 
-def libconfig_builder(env):
-    env.Install('.', '#fscomp-libconfig.json')
-
-def libconfig_parser():
-    return '$ARCHBUILDDIR/components/avltree/.fscomp/libconfig'
-
-def pkgconfig_builder(env):
-    pkgconfig = env.Substfile(
-        'lib/pkgconfig/fsdyn.pc',
-        '#fsdyn.pc.in',
-        SUBST_DICT={'@prefix@': env['PREFIX']},
-    )
-    env.Alias(
-        'install',
-        env.Install(os.path.join(env['PREFIX'], 'lib/pkgconfig'), pkgconfig),
-    )
-
-def pkgconfig_parser(prefix):
-    return ''
-
 def construct():
     ccflags = (
         ' -g -O2 -Wall -Werror '
         '-Wno-parentheses '
-    ) + os.getenv('FSCCFLAGS', '')
-    linkflags = os.getenv('FSLINKFLAGS', '')
-    ar_override = os.getenv('FSAR', os.getenv('FSBTAR', None))
-    cc_override = os.getenv('FSCC', os.getenv('FSBTCC', None))
-    ranlib_override = os.getenv('FSRANLIB', os.getenv('FSBTRANLIB', None))
+    )
     prefix = ARGUMENTS.get('prefix', '/usr/local')
-    if ARGUMENTS.get('fscomp', 0):
-        config_builder = libconfig_builder
-        config_parser = libconfig_parser()
-    else:
-        config_builder = pkgconfig_builder
-        config_parser = pkgconfig_parser(prefix)
-
-    for target_arch in target_architectures():
-        target_ccflags = TARGET_FLAGS[target_arch] + ccflags
-        target_cppdefines = TARGET_DEFINES[target_arch]
-        target_linkflags = TARGET_FLAGS[target_arch] + linkflags
-        build_dir = os.path.join('stage',
-                                 target_arch,
-                                 ARGUMENTS.get('builddir', 'build'))
+    arch_env = {}
+    for target_arch in fsenv.target_architectures():
+        arch_env[target_arch] = env = Environment(
+            NAME="fsdyn",
+            FSNAME="avltree",
+            ARCH=target_arch,
+            PREFIX=prefix,
+            CCFLAGS=TARGET_FLAGS[target_arch] + ccflags,
+            CPPDEFINES=TARGET_DEFINES[target_arch],
+            LINKFLAGS=TARGET_FLAGS[target_arch],
+            tools=['default', 'textfile', 'fscomp'])
+        fsenv.consider_environment_variables(env)
+    for target_arch in fsenv.target_architectures():
+        build_dir = os.path.join(
+            fsenv.STAGE,
+            target_arch,
+            ARGUMENTS.get('builddir', 'build'))
         for directory in DIRECTORIES:
-            env = Environment(ARCH=target_arch,
-                              CCFLAGS=target_ccflags,
-                              CPPDEFINES=target_cppdefines,
-                              LINKFLAGS=target_linkflags,
-                              CONFIG_BUILDER=config_builder,
-                              CONFIG_PARSER=config_parser,
-                              PREFIX=prefix,
-                              tools=['default', 'textfile'])
-            env['ARCHBUILDDIR'] = env.Dir('#stage/$ARCH/build').abspath
-            if ar_override:
-                env['AR'] = ar_override
-            if cc_override:
-                env['CC'] = cc_override
-            if ranlib_override:
-                env['RANLIB'] = ranlib_override
+            env = arch_env[target_arch].Clone()
+            host_env = arch_env[fsenv.HOST_ARCH].Clone()
             SConscript(dirs=directory,
-                       exports=['env'],
+                       exports=['env', 'host_env'],
                        duplicate=False,
                        variant_dir=os.path.join(build_dir, directory))
         Clean('.', build_dir)
