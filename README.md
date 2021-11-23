@@ -29,3 +29,4 @@ sudo scons [ prefix=<prefix> ] install
 
 The header files under `include` contain detailed documentation.
 
+[SCons]: https://scons.org/
