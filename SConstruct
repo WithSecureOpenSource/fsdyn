@@ -10,6 +10,7 @@ TARGET_DEFINES = {
     'freebsd_amd64': [],
     'linux32': ['_FILE_OFFSET_BITS=64'],
     'linux64': [],
+    'linux_arm64': [],
     'openbsd_amd64': [],
     'darwin': []
 }
@@ -18,6 +19,7 @@ TARGET_FLAGS = {
     'freebsd_amd64': '',
     'linux32': '-m32 ',
     'linux64': '',
+    'linux_arm64': '',
     'openbsd_amd64': '',
     'darwin': '-mmacosx-version-min=10.13 '
 }
