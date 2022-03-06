@@ -90,6 +90,11 @@ bool byte_array_copy(byte_array_t *array, size_t pos, const void *data,
     return true;
 }
 
+bool byte_array_copy_byte(byte_array_t *array, size_t pos, uint8_t c)
+{
+    return byte_array_copy(array, pos, &c, 1);
+}
+
 bool byte_array_copy_string(byte_array_t *array, size_t pos, const char *str)
 {
     return byte_array_copy(array, pos, str, strlen(str));
@@ -104,6 +109,11 @@ bool byte_array_append(byte_array_t *array, const void *data, size_t len)
     array->cursor += len;
     array->data[array->cursor] = 0;
     return true;
+}
+
+bool byte_array_append_byte(byte_array_t *array, uint8_t c)
+{
+    return byte_array_append(array, &c, 1);
 }
 
 bool byte_array_append_string(byte_array_t *array, const char *str)
