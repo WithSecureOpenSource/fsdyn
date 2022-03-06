@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "bytearray.h"
 #include "charstr.h"
 #include "fsdyn_version.h"
 
@@ -51,9 +52,8 @@ static char *fail(const char *reason)
 }
 
 static const char *punycode_encode_pass1(const char *p, const char *end,
-                                         size_t *pc_count, char ascii[],
-                                         size_t *ascii_count, int nonascii[],
-                                         size_t *nonascii_count)
+                                         char ascii[], size_t *ascii_count,
+                                         int nonascii[], size_t *nonascii_count)
 {
     if (p == end)
         return fail("label is empty");
@@ -81,26 +81,15 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
             record_nonascii(codepoint, nonascii, nonascii_count);
         first = false;
     }
-    *pc_count = n;
     *ascii_count = h;
     return p;
 }
 
 static const char BASE36_DIGIT[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-static char *emit(char *o, char *end_output, size_t *output_size, char c)
-{
-    (*output_size)++;
-    if (!o || o >= end_output)
-        return NULL;
-    *o++ = c;
-    return o;
-}
-
-static char *punycode_encode_pass2(const char *input, const char *end, char *o,
-                                   char *end_output, size_t *output_size,
-                                   size_t ascii_count, int nonascii[],
-                                   size_t nonascii_count)
+static void punycode_encode_pass2(const char *input, const char *end,
+                                  byte_array_t *output, size_t ascii_count,
+                                  int nonascii[], size_t nonascii_count)
 {
     int n = INITIAL_N;
     int delta = 0;
@@ -130,11 +119,11 @@ static char *punycode_encode_pass2(const char *input, const char *end, char *o,
                     t = k - bias;
                 if (q < t)
                     break;
-                o = emit(o, end_output, output_size,
-                         BASE36_DIGIT[t + (q - t) % (BASE - t)]);
+                byte_array_append_byte(output,
+                                       BASE36_DIGIT[t + (q - t) % (BASE - t)]);
                 q = (q - t) / (BASE - t);
             }
-            o = emit(o, end_output, output_size, BASE36_DIGIT[q]);
+            byte_array_append_byte(output, BASE36_DIGIT[q]);
             bias = adapt(delta, handled + 1, handled == basic_count);
             delta = 0;
             handled++;
@@ -142,12 +131,11 @@ static char *punycode_encode_pass2(const char *input, const char *end, char *o,
         delta++;
         n++;
     }
-    return o;
 }
 
-/* Read UTF-8 pointcodes from input until end is hit or '.' is encountered. */
+/* Read UTF-8 codepoints from input until end is hit or '.' is encountered. */
 static const char *punycode_encode(const char *input, const char *end,
-                                   char *output, size_t *output_size)
+                                   byte_array_t *output)
 {
     assert(end - input <= MAX_DNS_NAME_LENGTH);
     /* nonunique characters in order of appearance */
@@ -156,30 +144,26 @@ static const char *punycode_encode(const char *input, const char *end,
     /* unique codepoints in ascending order */
     int nonascii[MAX_DNS_NAME_LENGTH];
     size_t nonascii_count;
-    size_t pc_count;
-    const char *next =
-        punycode_encode_pass1(input, end, &pc_count, ascii, &ascii_count,
-                              nonascii, &nonascii_count);
+    const char *next = punycode_encode_pass1(input, end, ascii, &ascii_count,
+                                             nonascii, &nonascii_count);
     if (!next)
         return NULL;
-    char *o = output;
-    char *end_output = o + *output_size;
-    *output_size = 0;
+    size_t size = byte_array_size(output);
     if (nonascii_count) {
-        o = emit(o, end_output, output_size, 'x');
-        o = emit(o, end_output, output_size, 'n');
-        o = emit(o, end_output, output_size, '-');
-        o = emit(o, end_output, output_size, '-');
+        byte_array_append_byte(output, 'x');
+        byte_array_append_byte(output, 'n');
+        byte_array_append_byte(output, '-');
+        byte_array_append_byte(output, '-');
     }
     for (size_t i = 0; i < ascii_count; i++)
-        o = emit(o, end_output, output_size, ascii[i]);
+        byte_array_append_byte(output, ascii[i]);
     if (!nonascii_count)
         return next;
     if (ascii_count)
-        o = emit(o, end_output, output_size, '-');
-    o = punycode_encode_pass2(input, end, o, end_output, output_size,
-                              ascii_count, nonascii, nonascii_count);
-    if (*output_size > MAX_DNS_LABEL_LENGTH)
+        byte_array_append_byte(output, '-');
+    punycode_encode_pass2(input, end, output, ascii_count, nonascii,
+                          nonascii_count);
+    if (byte_array_size(output) - size > MAX_DNS_LABEL_LENGTH)
         return fail("label too long");
     return next;
 }
@@ -197,24 +181,23 @@ static char *encode_filtered(const char *hostname, const char *end)
     if (end - hostname > MAX_DNS_NAME_LENGTH) /* encoding won't shorten it */
         return fail("hostname too long");
     const char *p = hostname;
-    size_t output_size = 0;
-    char encoding[MAX_DNS_NAME_LENGTH + 1];
-    char *q = encoding;
+    byte_array_t *encoding = make_byte_array(MAX_DNS_NAME_LENGTH + 2);
     do {
-        size_t output_label_size = encoding + sizeof encoding - q;
-        p = punycode_encode(p, end, q, &output_label_size);
-        if (!p)
+        p = punycode_encode(p, end, encoding);
+        if (!p) {
+            destroy_byte_array(encoding);
             return NULL;
-        assert(output_label_size <= MAX_DNS_LABEL_LENGTH);
-        output_size += output_label_size + 1;
-        if (output_size > MAX_DNS_NAME_LENGTH - 1) /* -1 for the final '.' */
+        }
+        if (p < end && *p == '.')
+            byte_array_append_byte(encoding, '.');
+        if (byte_array_size(encoding) > MAX_DNS_NAME_LENGTH) {
+            destroy_byte_array(encoding);
             return fail("hostname encoding too long");
-        q += output_label_size;
-        *q++ = '.';
-    } while (end - p++ > 1);    /* allow the DNS name to end in a '.' */
-    output_size += end - p + 1; /* allow a final '.' */
-    q[end - p] = '\0';
-    return charstr_dupstr(encoding);
+        }
+    } while (end - p++ > 1); /* allow the DNS name to end in a '.' */
+    char *result = charstr_dupstr(byte_array_data(encoding));
+    destroy_byte_array(encoding);
+    return result;
 }
 
 static char *safecopy(const char *src, char *dest, char *end)
