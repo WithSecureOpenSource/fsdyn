@@ -149,9 +149,12 @@ static char *punycode_encode_pass2(const char *input, const char *end, char *o,
 static const char *punycode_encode(const char *input, const char *end,
                                    char *output, size_t *output_size)
 {
-    char ascii[end - input]; /* nonunique characters in order of appearance */
+    assert(end - input <= MAX_DNS_NAME_LENGTH);
+    /* nonunique characters in order of appearance */
+    char ascii[MAX_DNS_NAME_LENGTH];
     size_t ascii_count;
-    int nonascii[end - input]; /* unique codepoints in ascending order */
+    /* unique codepoints in ascending order */
+    int nonascii[MAX_DNS_NAME_LENGTH];
     size_t nonascii_count;
     size_t pc_count;
     const char *next =
