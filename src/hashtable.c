@@ -96,7 +96,7 @@ hash_elem_t *hash_table_put(hash_table_t *table, const void *key,
     size_t i = table->hash(key) % table->capacity;
     list_t *list = table->table[i];
     if (list == NULL) {
-        list = table->table[i] = make_list();
+        table->table[i] = make_list();
         add_element(table, i, key, value);
         table->size++;
         return NULL;
