@@ -335,6 +335,84 @@ unsigned charstr_digit_value(char c)
     }
 }
 
+uint64_t charstr_parse_digits(const char *digits, const char **end,
+                              unsigned base)
+{
+    if (base < 2 || base > 16) {
+        errno = EINVAL;
+        return 0;
+    }
+    uint64_t value = 0;
+    const char *endp = end ? *end : NULL;
+    uint64_t limit = (uint64_t) -1 / base;
+    const char *dp = digits;
+    for (; dp != endp; dp++) {
+        unsigned d = charstr_digit_value(*dp);
+        if (d == -1U || d >= base)
+            break;
+        uint64_t old_value = value;
+        value = base * value + d;
+        if (old_value > limit || value < old_value)
+            errno = ERANGE;
+    }
+    if (dp == digits)
+        errno = EILSEQ;
+    if (end)
+        *end = dp;
+    return value;
+}
+
+static unsigned natural_base(const char **s, const char **end)
+{
+    const char *sp = *s;
+    const char *endp = end ? *end : NULL;
+    if (sp == endp || *sp != '0')
+        return 10;
+    sp++;
+    if (sp == endp || !(*sp == 'x' || *sp == 'X'))
+        return 8;
+    *s = sp + 1;
+    return 16;
+}
+
+static int64_t parse_positive(const char *s, const char **end,
+                              unsigned base)
+{
+    if (base == 0)
+        base = natural_base(&s, end);
+    int64_t value = charstr_parse_digits(s, end, base);
+    if (value < 0)
+        errno = ERANGE;
+    return value;
+}
+
+static int64_t parse_negative(const char *s, const char **end,
+                              unsigned base)
+{
+    if (base == 0)
+        base = natural_base(&s, end);
+    int64_t value = -charstr_parse_digits(s, end, base);
+    if (value > 0)
+        errno = ERANGE;
+    return value;
+}
+
+int64_t charstr_parse_signed(const char *buffer, const char **end,
+                             unsigned base)
+{
+    const char *s = buffer;
+    const char *endp = end ? *end : NULL;
+    while (s != endp && *s && charstr_char_class(*s) & CHARSTR_WHITESPACE)
+        s++;
+    if (s != endp) {
+        if (*s == '+')
+            return parse_positive(s + 1, end, base);
+        if (*s == '-')
+            return parse_negative(s + 1, end, base);
+    }
+    return parse_positive(s, end, base);
+}
+
 char *charstr_dupstr(const char *s)
 {
     if (!s)

@@ -62,6 +62,35 @@ char charstr_ucase_char(char c);
 /* The return value is -1U if c is not a hexadecimal digit. */
 unsigned charstr_digit_value(char c);
 
+/* Parse a sequence of ASCII digits into a 64-bit unsigned integer.
+ * Similar to strtol(3), but:
+ *  - The locale is ignored.
+ *  - base must be between 2 and 16, or errno is set to EINVAL.
+ *  - Initial whitespace is not skipped.
+ *  - If endptr and *endptr are non-NULL on input, *endptr is used to
+ *    limit the sequence.
+ *  - In case of an overflow, the returned value wraps naturally, but
+ *    errno is set to ERANGE
+ *  - If the sequence does not start with a valid digit, errno is set
+ *    to EILSEQ.
+ *  - In case of an error return, the value of *end is undefined. */
+uint64_t charstr_parse_digits(const char *digits, const char **end,
+                              unsigned base);
+
+/* Parse a buffer of characters into a 64-bit signed integer.
+ * Similar to strtol(3), but:
+ *  - The locale is ignored.
+ *  - base must be 0 or between 2 and 16, or errno is set to EINVAL.
+ *  - If endptr and *endptr are non-NULL on input, *endptr is used to
+ *    limit the sequence.
+ *  - In case of an overflow, the returned value wraps naturally, but
+ *    errno is set to ERANGE
+ *  - If the buffer does not contain a valid signed integer, errno is set
+ *    to EILSEQ.
+ *  - In case of an error return, the value of *end is undefined. */
+int64_t charstr_parse_signed(const char *buffer, const char **end,
+                             unsigned base);
+
 /* The returned string is allocated with fsalloc(). */
 char *charstr_dupstr(const char *s);
 char *charstr_dupsubstr(const char *s, const char *end);
