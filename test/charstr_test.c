@@ -216,89 +216,73 @@ static bool test_upper_lower(void)
     return !*p && !*q;
 }
 
-static bool test_parse_digits_inval(void)
+static bool test_to_unsigned_inval(void)
 {
     uint64_t u;
     const char *_101 = "101";
     errno = 0;
-    u = charstr_parse_digits(_101, NULL, 0);
+    u = charstr_to_unsigned(_101, NULL, 1);
     if (u || errno != EINVAL) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 0) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 1) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     errno = 0;
-    u = charstr_parse_digits(_101, NULL, 1);
+    u = charstr_to_unsigned(_101, NULL, 17);
     if (u || errno != EINVAL) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 1) => (%llu, %d)\n",
-                (unsigned long long) u, errno);
-        return false;
-    }
-    errno = 0;
-    u = charstr_parse_digits(_101, NULL, 17);
-    if (u || errno != EINVAL) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 17) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 17) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     return true;
 }
 
-static bool test_parse_digits_unlimited(void)
+static bool test_to_unsigned_unlimited(void)
 {
     uint64_t u;
     const char *_101 = "101";
     errno = 0;
-    u = charstr_parse_digits(_101, NULL, 2);
-    if (u != 5|| errno) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 2) => (%llu, %d)\n",
+    u = charstr_to_unsigned(_101, NULL, 2);
+    if (u != 5 || errno) {
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 2) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits(_101, NULL, 5);
-    if (u != 26|| errno) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 5) => (%llu, %d)\n",
+    u = charstr_to_unsigned(_101, NULL, 5);
+    if (u != 26 || errno) {
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 5) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits(_101, NULL, 10);
-    if (u != 101|| errno) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 10) => (%llu, %d)\n",
+    u = charstr_to_unsigned(_101, NULL, 10);
+    if (u != 101 || errno) {
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits(_101, NULL, 16);
-    if (u != 257|| errno) {
-        fprintf(stderr,
-                "charstr_parse_digits(_101, NULL, 16) => (%llu, %d)\n",
+    u = charstr_to_unsigned(_101, NULL, 16);
+    if (u != 257 || errno) {
+        fprintf(stderr, "charstr_to_unsigned(_101, NULL, 16) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits("", NULL, 10);
+    u = charstr_to_unsigned("", NULL, 10);
     if (u || errno != EILSEQ) {
-        fprintf(stderr,
-                "charstr_parse_digits(\"\", NULL, 10) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_unsigned(\"\", NULL, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     errno = 0;
-    u = charstr_parse_digits("A", NULL, 10);
+    u = charstr_to_unsigned("A", NULL, 10);
     if (u || errno != EILSEQ) {
-        fprintf(stderr,
-                "charstr_parse_digits(\"\", NULL, 10) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_unsigned(\"\", NULL, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     return true;
 }
 
-static bool test_parse_digits_limited(void)
+static bool test_to_unsigned_limited(void)
 {
     uint64_t u;
     const char *_101 = "101\n";
@@ -306,89 +290,88 @@ static bool test_parse_digits_limited(void)
     const char *end;
     errno = 0;
     end = _101 + 5;
-    u = charstr_parse_digits(_101, &end, 10);
-    if (u != 101|| errno || end != _101 + 3) {
+    u = charstr_to_unsigned(_101, &end, 10);
+    if (u != 101 || errno || end != _101 + 3) {
         fprintf(stderr,
-                "charstr_parse_digits(_101, ... + 5, 10) => (%llu, %d, %d)\n",
+                "charstr_to_unsigned(_101, ... + 5, 10) => (%llu, %d, %d)\n",
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
     end = _101 + 3;
-    u = charstr_parse_digits(_101, &end, 10);
-    if (u != 101|| errno || end != _101 + 3) {
+    u = charstr_to_unsigned(_101, &end, 10);
+    if (u != 101 || errno || end != _101 + 3) {
         fprintf(stderr,
-                "charstr_parse_digits(_101, ... + 3, 10) => (%llu, %d, %d)\n",
+                "charstr_to_unsigned(_101, ... + 3, 10) => (%llu, %d, %d)\n",
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
     end = _101 + 2;
-    u = charstr_parse_digits(_101, &end, 10);
+    u = charstr_to_unsigned(_101, &end, 10);
     if (u != 10 || errno || end != _101 + 2) {
         fprintf(stderr,
-                "charstr_parse_digits(_101, ... + 2, 10) => (%llu, %d, %d)\n",
+                "charstr_to_unsigned(_101, ... + 2, 10) => (%llu, %d, %d)\n",
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
     end = _101;
-    u = charstr_parse_digits(_101, &end, 10);
+    u = charstr_to_unsigned(_101, &end, 10);
     if (u || errno != EILSEQ) {
         fprintf(stderr,
-                "charstr_parse_digits(_101, ... + 0, 10) => (%llu, %d)\n",
+                "charstr_to_unsigned(_101, ... + 0, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     errno = 0;
     end = A + 1;
-    u = charstr_parse_digits(A, &end, 10);
+    u = charstr_to_unsigned(A, &end, 10);
     if (u || errno != EILSEQ) {
-        fprintf(stderr,
-                "charstr_parse_digits(A, ... + 1, 10) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_unsigned(A, ... + 1, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
     return true;
 }
 
-static bool test_parse_digits_range(void)
+static bool test_to_unsigned_range(void)
 {
     uint64_t u;
     errno = 0;
-    u = charstr_parse_digits("0000000000000000", NULL, 16);
+    u = charstr_to_unsigned("0000000000000000", NULL, 16);
     if (u || errno) {
         fprintf(stderr,
-                "charstr_parse_digits(\"0000000000000000\", NULL, 16) => "
+                "charstr_to_unsigned(\"0000000000000000\", NULL, 16) => "
                 "(0x%llx, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits("8000000000000000", NULL, 16);
+    u = charstr_to_unsigned("8000000000000000", NULL, 16);
     if (u != 0x8000000000000000 || errno) {
         fprintf(stderr,
-                "charstr_parse_digits(\"8000000000000000\", NULL, 16) => "
+                "charstr_to_unsigned(\"8000000000000000\", NULL, 16) => "
                 "(0x%llx, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits("ffffffffffffffff", NULL, 16);
+    u = charstr_to_unsigned("ffffffffffffffff", NULL, 16);
     if (u != 0xffffffffffffffff || errno) {
         fprintf(stderr,
-                "charstr_parse_digits(\"ffffffffffffffff\", NULL, 16) => "
+                "charstr_to_unsigned(\"ffffffffffffffff\", NULL, 16) => "
                 "(0x%llx, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits("18446744073709551615", NULL, 10);
+    u = charstr_to_unsigned("18446744073709551615", NULL, 10);
     if (u != 18446744073709551615ULL || errno) {
         fprintf(stderr,
-                "charstr_parse_digits(\"18446744073709551615\", NULL, 10) => "
+                "charstr_to_unsigned(\"18446744073709551615\", NULL, 10) => "
                 "(%lld, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    u = charstr_parse_digits("ffffffffffffffffc", NULL, 16);
+    u = charstr_to_unsigned("ffffffffffffffffc", NULL, 16);
     if (u != 0xfffffffffffffffc || errno != ERANGE) {
         fprintf(stderr,
-                "charstr_parse_digits(\"ffffffffffffffffc\", NULL, 16) => "
+                "charstr_to_unsigned(\"ffffffffffffffffc\", NULL, 16) => "
                 "(0x%llx, %d)\n",
                 (unsigned long long) u, errno);
         return false;
@@ -396,153 +379,142 @@ static bool test_parse_digits_range(void)
     return true;
 }
 
-static bool test_parse_digits(void)
+static bool test_to_unsigned(void)
 {
-    return test_parse_digits_inval() && 
-        test_parse_digits_unlimited() &&
-        test_parse_digits_limited() &&
-        test_parse_digits_range();
+    return test_to_unsigned_inval() && test_to_unsigned_unlimited() &&
+        test_to_unsigned_limited() && test_to_unsigned_range();
 }
 
-static bool test_parse_signed_inval(void)
+static bool test_to_integer_inval(void)
 {
     int64_t v;
     const char *_101 = "101";
     errno = 0;
-    v = charstr_parse_signed(_101, NULL, 1);
+    v = charstr_to_integer(_101, NULL, 1);
     if (v || errno != EINVAL) {
-        fprintf(stderr,
-                "charstr_parse_signed(_101, NULL, 1) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(_101, NULL, 1) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
     errno = 0;
-    v = charstr_parse_signed(_101, NULL, 17);
+    v = charstr_to_integer(_101, NULL, 17);
     if (v || errno != EINVAL) {
-        fprintf(stderr,
-                "charstr_parse_signed(_101, NULL, 17) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(_101, NULL, 17) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
     return true;
 }
 
-static bool test_parse_signed_unlimited(void)
+static bool test_to_integer_unlimited(void)
 {
     int64_t v;
     errno = 0;
-    v = charstr_parse_signed(" 12", NULL, 2);
+    v = charstr_to_integer("12", NULL, 2);
     if (v != 1 || errno) {
-        fprintf(stderr,
-                "charstr_parse_signed(\" 12\", NULL, 2) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(\"12\", NULL, 2) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed(" \n-12", NULL, 8);
+    v = charstr_to_integer("-12", NULL, 8);
     if (v != -10 || errno) {
         fprintf(stderr,
-                "charstr_parse_signed(\" \\n-12\", NULL, 8) => (%llu, %d)\n",
+                "charstr_to_integer(\" \\-12\", NULL, 8) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("-12", NULL, 0);
+    v = charstr_to_integer("-12", NULL, 0);
     if (v != -12 || errno) {
-        fprintf(stderr,
-                "charstr_parse_signed(\"-12\", NULL, 0) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(\"-12\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("\t+0x12", NULL, 0);
+    v = charstr_to_integer("+0x12", NULL, 0);
     if (v != 18 || errno) {
         fprintf(stderr,
-                "charstr_parse_signed(\"\\t+0x12\", NULL, 0) => (%llu, %d)\n",
+                "charstr_to_integer(\"+0x12\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("\t+012", NULL, 0);
+    v = charstr_to_integer("+012", NULL, 0);
     if (v != 10 || errno) {
-        fprintf(stderr,
-                "charstr_parse_signed(\"\\t+012\", NULL, 0) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(\"+012\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("0xQ", NULL, 0);
+    v = charstr_to_integer("0xQ", NULL, 0);
     if (v || errno != EILSEQ) {
-        fprintf(stderr,
-                "charstr_parse_signed(\"0xQ\", NULL, 0) => (%llu, %d)\n",
+        fprintf(stderr, "charstr_to_integer(\"0xQ\", NULL, 0) => (%llu, %d)\n",
+                (unsigned long long) v, errno);
+        return false;
+    }
+    errno = 0;
+    v = charstr_to_integer(" 0x0", NULL, 0);
+    if (v || errno != EILSEQ) {
+        fprintf(stderr, "charstr_to_integer(\" 0x0\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
     return true;
 }
 
-static bool test_parse_signed_limited(void)
+static bool test_to_integer_limited(void)
 {
     int64_t v;
     errno = 0;
-    const char *_0x101 = " 0x101\n";
+    const char *_0x101 = "0x101\n";
     const char *end;
-    end = _0x101 + 5;
-    v = charstr_parse_signed(_0x101, &end, 2);
-    if (v != 0 || errno || end != _0x101 + 2) {
+    end = _0x101 + 4;
+    v = charstr_to_integer(_0x101, &end, 2);
+    if (v != 0 || errno || end != _0x101 + 1) {
         fprintf(stderr,
-                "charstr_parse_signed(_0x101, ... + 5, 2) => (%llu, %d, %d)\n",
+                "charstr_to_integer(_0x101, ... + 4, 2) => (%llu, %d, %d)\n",
                 (unsigned long long) v, errno, (int) (end - _0x101));
         return false;
     }
-    end = _0x101 + 5;
-    v = charstr_parse_signed(_0x101, &end, 0);
-    if (v != 16 || errno || end != _0x101 + 5) {
+    end = _0x101 + 4;
+    v = charstr_to_integer(_0x101, &end, 0);
+    if (v != 16 || errno || end != _0x101 + 4) {
         fprintf(stderr,
-                "charstr_parse_signed(_0x101, ... + 5, 16) "
-                "=> (%llu, %d, %d)\n",
+                "charstr_to_integer(_0x101, ... + 4, 0) => (%llu, %d, %d)\n",
                 (unsigned long long) v, errno, (int) (end - _0x101));
         return false;
     }
     end = _0x101 + 100;
-    v = charstr_parse_signed(_0x101, &end, 0);
-    if (v != 257 || errno || end != _0x101 + 6) {
+    v = charstr_to_integer(_0x101, &end, 0);
+    if (v != 257 || errno || end != _0x101 + 5) {
         fprintf(stderr,
-                "charstr_parse_signed(_0x101, ... + 5, 16) "
-                "=> (%llu, %d, %d)\n",
+                "charstr_to_integer(_0x101, ... + 100, 0) => (%llu, %d, %d)\n",
                 (unsigned long long) v, errno, (int) (end - _0x101));
         return false;
     }
-    end = _0x101 + 1;
-    v = charstr_parse_signed(_0x101, &end, 2);
-    if (v || errno != EILSEQ) {
-        fprintf(stderr,
-                "charstr_parse_signed(_0x101, ... + 5, 2) => (%llu, %d)\n",
-                (unsigned long long) v, errno);
-        return false;
-    }
     return true;
 }
 
-static bool test_parse_signed_range(void)
+static bool test_to_integer_range(void)
 {
     int64_t v;
     errno = 0;
-    v = charstr_parse_signed("-0x8000000000000000", NULL, 0);
+    v = charstr_to_integer("-0x8000000000000000", NULL, 0);
     if (v != -0x8000000000000000LL || errno) {
         fprintf(stderr,
-                "charstr_parse_signed(\"-0x8000000000000000\", NULL, 0) "
+                "charstr_to_integer(\"-0x8000000000000000\", NULL, 0) "
                 "=> (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("+0x7fffffffffffffff", NULL, 0);
+    v = charstr_to_integer("+0x7fffffffffffffff", NULL, 0);
     if (v != 0x7fffffffffffffffLL || errno) {
         fprintf(stderr,
-                "charstr_parse_signed(\"+0x7fffffffffffffff\", NULL, 0) "
+                "charstr_to_integer(\"+0x7fffffffffffffff\", NULL, 0) "
                 "=> (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    v = charstr_parse_signed("0x8000000000000000", NULL, 0);
+    v = charstr_to_integer("0x8000000000000000", NULL, 0);
     if (v != -0x8000000000000000LL || errno != ERANGE) {
         fprintf(stderr,
-                "charstr_parse_signed(\"0x8000000000000000\", NULL, 0) "
+                "charstr_to_integer(\"0x8000000000000000\", NULL, 0) "
                 "=> (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
@@ -550,12 +522,10 @@ static bool test_parse_signed_range(void)
     return true;
 }
 
-static bool test_parse_signed(void)
+static bool test_to_integer(void)
 {
-    return test_parse_signed_inval() && 
-        test_parse_signed_unlimited() &&
-        test_parse_signed_limited() &&
-        test_parse_signed_range();
+    return test_to_integer_inval() && test_to_integer_unlimited() &&
+        test_to_integer_limited() && test_to_integer_range();
 }
 
 int main()
@@ -578,9 +548,9 @@ int main()
         return EXIT_FAILURE;
     if (!test_upper_lower())
         return EXIT_FAILURE;
-    if (!test_parse_digits())
+    if (!test_to_unsigned())
         return EXIT_FAILURE;
-    if (!test_parse_signed())
+    if (!test_to_integer())
         return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
     return EXIT_SUCCESS;
