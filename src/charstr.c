@@ -336,81 +336,110 @@ unsigned charstr_digit_value(char c)
     }
 }
 
-static unsigned natural_base(const char **s, const char **end)
+static unsigned natural_base(const char **s, const char *end)
 {
     const char *sp = *s;
-    const char *endp = end ? *end : NULL;
-    if (sp == endp || *sp != '0')
+    if (sp == end || *sp != '0')
         return 10;
     sp++;
-    if (sp == endp || !(*sp == 'x' || *sp == 'X'))
+    if (sp == end || !(*sp == 'x' || *sp == 'X'))
         return 8;
     *s = sp + 1;
     return 16;
 }
 
-uint64_t charstr_to_unsigned(const char *buffer, const char **end,
-                             unsigned base)
+static ssize_t to_unsigned(const char *buffer, const char *end, unsigned base,
+                           uint64_t *value, bool *overflow)
 {
     const char *digits = buffer;
     if (base == 0)
         base = natural_base(&digits, end);
     if (base < 2 || base > 16) {
         errno = EINVAL;
-        return 0;
+        return -1;
     }
-    errno = 0;
-    uint64_t value = 0;
-    const char *endp = end ? *end : NULL;
+    *overflow = false;
+    uint64_t n = 0;
     uint64_t limit = (uint64_t) -1 / base;
     const char *dp = digits;
-    for (; dp != endp; dp++) {
+    for (; dp != end; dp++) {
         unsigned d = charstr_digit_value(*dp);
         if (d == -1U || d >= base)
             break;
-        uint64_t old_value = value;
-        value = base * value + d;
-        if (old_value > limit || value < old_value)
-            errno = ERANGE;
+        uint64_t old_n = n;
+        n = base * n + d;
+        if (old_n > limit || n < old_n)
+            *overflow = true;
     }
-    if (dp == digits)
+    if (dp == digits) {
         errno = EILSEQ;
-    if (end)
-        *end = dp;
-    return value;
+        return -1;
+    }
+    *value = n;
+    return dp - buffer;
 }
 
-static int64_t parse_positive(const char *s, const char **end, unsigned base)
+ssize_t charstr_to_unsigned(const char *buffer, size_t size, unsigned base,
+                            uint64_t *value)
 {
-    int64_t value = charstr_to_unsigned(s, end, base);
-    if (value < 0)
+    const char *end = buffer + size;
+    bool overflow;
+    ssize_t count = to_unsigned(buffer, end, base, value, &overflow);
+    if (count >= 0 && overflow)
         errno = ERANGE;
-    return value;
+    return count;
 }
 
-static int64_t parse_negative(const char *s, const char **end, unsigned base)
+static int64_t parse_positive(const char *s, const char *end, unsigned base,
+                              int64_t *value)
 {
-    int64_t value = -charstr_to_unsigned(s, end, base);
-    if (value > 0)
-        errno = ERANGE;
-    return value;
+    uint64_t u;
+    bool overflow;
+    ssize_t count = to_unsigned(s, end, base, &u, &overflow);
+    if (count >= 0) {
+        if (overflow || (int64_t) u < 0)
+            errno = ERANGE;
+        *value = u;
+    }
+    return count;
 }
 
-int64_t charstr_to_integer(const char *buffer, const char **end, unsigned base)
+static int64_t parse_negative(const char *s, const char *end, unsigned base,
+                              int64_t *value)
 {
-    const char *s = buffer;
-    const char *endp = end ? *end : NULL;
-    if (s == endp) {
+    uint64_t u;
+    bool overflow;
+    ssize_t count = to_unsigned(s, end, base, &u, &overflow);
+    if (count >= 0) {
+        if (overflow || (int64_t) -u > 0)
+            errno = ERANGE;
+        *value = -u;
+    }
+    return count;
+}
+
+ssize_t charstr_to_integer(const char *buffer, size_t size, unsigned base,
+                           int64_t *value)
+{
+    if (!size) {
         errno = EILSEQ;
         return 0;
     }
-    switch (*s) {
+    const char *end = buffer + size;
+    ssize_t count;
+    switch (*buffer) {
         case '+':
-            return parse_positive(s + 1, end, base);
+            count = parse_positive(buffer + 1, end, base, value);
+            if (count < 0)
+                return count;
+            return count + 1;
         case '-':
-            return parse_negative(s + 1, end, base);
+            count = parse_negative(buffer + 1, end, base, value);
+            if (count < 0)
+                return count;
+            return count + 1;
         default:
-            return parse_positive(s, end, base);
+            return parse_positive(buffer, end, base, value);
     }
 }
 

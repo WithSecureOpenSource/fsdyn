@@ -63,23 +63,30 @@ char charstr_ucase_char(char c);
 unsigned charstr_digit_value(char c);
 
 /* charstr_to_unsigned() and charstr_to_integer() parse a buffer of
- * characters into a 64-bit unsigned or signed integer. The functions
- * are similar to strtol(3) (qv), but:
- *  - The locale is ignored.
- *  - errno is set to 0 if no error is encountered.
- *  - base must be 0 or between 2 and 16, or errno is set to EINVAL.
- *  - Initial whitespace is not skipped.
- *  - If endptr and *endptr are non-NULL on input, *endptr is used to
- *    limit the sequence.
- *  - In case of an overflow, the returned value wraps naturally, but
- *    errno is set to ERANGE
- *  - If the buffer does not contain a valid unsigned integer, errno
- *    is set to EILSEQ.
- *  - In case of an error return, the value of *end is undefined. */
-uint64_t charstr_to_unsigned(const char *buffer, const char **end,
-                             unsigned base);
-int64_t charstr_to_integer(const char *buffer, const char **end,
-                           unsigned base);
+ * characters into a 64-bit unsigned or signed integer. Parsing ends
+ * when the first illegal character (e.g. NUL or punctuation) is
+ * encountered or the end of the buffer is reached. The return value
+ * indicates how many characters were consumed in parsing.
+ *
+ * A negative value is returned and errno is set to EILSEQ if the
+ * representation is syntactically illegal. For example, 3 is returned
+ * for "111}", but a negative number is returned for "}" because no
+ * integer is detected..
+ *
+ * The integer base must be 0 or between 2 and 16. If base is 0,
+ * C-style representation is expected (e.g. "-033" is taken as an
+ * octal number). A sign character ('+' or '-') is allowed only by
+ * charstr_to_integer(). A bad base value results in a negative value
+ * with errno set to EINVAL.
+ *
+ * If the value overflows, a natural (2's-complement) wrapping is
+ * performed. In that case, a positive value is returned and errno is
+ * set to ERANGE. An application wishing to guard for the possibility
+ * should set errno to zero before calling the function. */
+ssize_t charstr_to_unsigned(const char *buffer, size_t size, unsigned base,
+                            uint64_t *value);
+ssize_t charstr_to_integer(const char *buffer, size_t size, unsigned base,
+                           int64_t *value);
 
 /* The returned string is allocated with fsalloc(). */
 char *charstr_dupstr(const char *s);
