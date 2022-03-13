@@ -66,6 +66,7 @@ unsigned charstr_digit_value(char c);
  * characters into a 64-bit unsigned or signed integer. The functions
  * are similar to strtol(3) (qv), but:
  *  - The locale is ignored.
+ *  - errno is set to 0 if no error is encountered.
  *  - base must be 0 or between 2 and 16, or errno is set to EINVAL.
  *  - Initial whitespace is not skipped.
  *  - If endptr and *endptr are non-NULL on input, *endptr is used to

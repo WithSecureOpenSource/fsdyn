@@ -358,6 +358,7 @@ uint64_t charstr_to_unsigned(const char *buffer, const char **end,
         errno = EINVAL;
         return 0;
     }
+    errno = 0;
     uint64_t value = 0;
     const char *endp = end ? *end : NULL;
     uint64_t limit = (uint64_t) -1 / base;

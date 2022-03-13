@@ -220,14 +220,14 @@ static bool test_to_unsigned_inval(void)
 {
     uint64_t u;
     const char *_101 = "101";
-    errno = 0;
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 1);
     if (u || errno != EINVAL) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 1) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    errno = 0;
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 17);
     if (u || errno != EINVAL) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 17) => (%llu, %d)\n",
@@ -241,38 +241,42 @@ static bool test_to_unsigned_unlimited(void)
 {
     uint64_t u;
     const char *_101 = "101";
-    errno = 0;
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 2);
     if (u != 5 || errno) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 2) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 5);
     if (u != 26 || errno) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 5) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 10);
     if (u != 101 || errno) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned(_101, NULL, 16);
     if (u != 257 || errno) {
         fprintf(stderr, "charstr_to_unsigned(_101, NULL, 16) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned("", NULL, 10);
     if (u || errno != EILSEQ) {
         fprintf(stderr, "charstr_to_unsigned(\"\", NULL, 10) => (%llu, %d)\n",
                 (unsigned long long) u, errno);
         return false;
     }
-    errno = 0;
+    errno = EAGAIN;
     u = charstr_to_unsigned("A", NULL, 10);
     if (u || errno != EILSEQ) {
         fprintf(stderr, "charstr_to_unsigned(\"\", NULL, 10) => (%llu, %d)\n",
@@ -288,7 +292,7 @@ static bool test_to_unsigned_limited(void)
     const char *_101 = "101\n";
     const char *A = "A\n";
     const char *end;
-    errno = 0;
+    errno = EAGAIN;
     end = _101 + 5;
     u = charstr_to_unsigned(_101, &end, 10);
     if (u != 101 || errno || end != _101 + 3) {
@@ -297,6 +301,7 @@ static bool test_to_unsigned_limited(void)
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
+    errno = EAGAIN;
     end = _101 + 3;
     u = charstr_to_unsigned(_101, &end, 10);
     if (u != 101 || errno || end != _101 + 3) {
@@ -305,6 +310,7 @@ static bool test_to_unsigned_limited(void)
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
+    errno = EAGAIN;
     end = _101 + 2;
     u = charstr_to_unsigned(_101, &end, 10);
     if (u != 10 || errno || end != _101 + 2) {
@@ -313,6 +319,7 @@ static bool test_to_unsigned_limited(void)
                 (unsigned long long) u, errno, (int) (end - _101));
         return false;
     }
+    errno = EAGAIN;
     end = _101;
     u = charstr_to_unsigned(_101, &end, 10);
     if (u || errno != EILSEQ) {
@@ -321,7 +328,7 @@ static bool test_to_unsigned_limited(void)
                 (unsigned long long) u, errno);
         return false;
     }
-    errno = 0;
+    errno = EAGAIN;
     end = A + 1;
     u = charstr_to_unsigned(A, &end, 10);
     if (u || errno != EILSEQ) {
@@ -335,7 +342,7 @@ static bool test_to_unsigned_limited(void)
 static bool test_to_unsigned_range(void)
 {
     uint64_t u;
-    errno = 0;
+    errno = EAGAIN;
     u = charstr_to_unsigned("0000000000000000", NULL, 16);
     if (u || errno) {
         fprintf(stderr,
@@ -344,6 +351,7 @@ static bool test_to_unsigned_range(void)
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned("8000000000000000", NULL, 16);
     if (u != 0x8000000000000000 || errno) {
         fprintf(stderr,
@@ -352,6 +360,7 @@ static bool test_to_unsigned_range(void)
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned("ffffffffffffffff", NULL, 16);
     if (u != 0xffffffffffffffff || errno) {
         fprintf(stderr,
@@ -360,6 +369,7 @@ static bool test_to_unsigned_range(void)
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned("18446744073709551615", NULL, 10);
     if (u != 18446744073709551615ULL || errno) {
         fprintf(stderr,
@@ -368,6 +378,7 @@ static bool test_to_unsigned_range(void)
                 (unsigned long long) u, errno);
         return false;
     }
+    errno = EAGAIN;
     u = charstr_to_unsigned("ffffffffffffffffc", NULL, 16);
     if (u != 0xfffffffffffffffc || errno != ERANGE) {
         fprintf(stderr,
@@ -389,14 +400,14 @@ static bool test_to_integer_inval(void)
 {
     int64_t v;
     const char *_101 = "101";
-    errno = 0;
+    errno = EAGAIN;
     v = charstr_to_integer(_101, NULL, 1);
     if (v || errno != EINVAL) {
         fprintf(stderr, "charstr_to_integer(_101, NULL, 1) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    errno = 0;
+    errno = EAGAIN;
     v = charstr_to_integer(_101, NULL, 17);
     if (v || errno != EINVAL) {
         fprintf(stderr, "charstr_to_integer(_101, NULL, 17) => (%llu, %d)\n",
@@ -409,13 +420,14 @@ static bool test_to_integer_inval(void)
 static bool test_to_integer_unlimited(void)
 {
     int64_t v;
-    errno = 0;
+    errno = EAGAIN;
     v = charstr_to_integer("12", NULL, 2);
     if (v != 1 || errno) {
         fprintf(stderr, "charstr_to_integer(\"12\", NULL, 2) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("-12", NULL, 8);
     if (v != -10 || errno) {
         fprintf(stderr,
@@ -423,12 +435,14 @@ static bool test_to_integer_unlimited(void)
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("-12", NULL, 0);
     if (v != -12 || errno) {
         fprintf(stderr, "charstr_to_integer(\"-12\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("+0x12", NULL, 0);
     if (v != 18 || errno) {
         fprintf(stderr,
@@ -436,19 +450,21 @@ static bool test_to_integer_unlimited(void)
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("+012", NULL, 0);
     if (v != 10 || errno) {
         fprintf(stderr, "charstr_to_integer(\"+012\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("0xQ", NULL, 0);
     if (v || errno != EILSEQ) {
         fprintf(stderr, "charstr_to_integer(\"0xQ\", NULL, 0) => (%llu, %d)\n",
                 (unsigned long long) v, errno);
         return false;
     }
-    errno = 0;
+    errno = EAGAIN;
     v = charstr_to_integer(" 0x0", NULL, 0);
     if (v || errno != EILSEQ) {
         fprintf(stderr, "charstr_to_integer(\" 0x0\", NULL, 0) => (%llu, %d)\n",
@@ -464,6 +480,7 @@ static bool test_to_integer_limited(void)
     errno = 0;
     const char *_0x101 = "0x101\n";
     const char *end;
+    errno = EAGAIN;
     end = _0x101 + 4;
     v = charstr_to_integer(_0x101, &end, 2);
     if (v != 0 || errno || end != _0x101 + 1) {
@@ -472,6 +489,7 @@ static bool test_to_integer_limited(void)
                 (unsigned long long) v, errno, (int) (end - _0x101));
         return false;
     }
+    errno = EAGAIN;
     end = _0x101 + 4;
     v = charstr_to_integer(_0x101, &end, 0);
     if (v != 16 || errno || end != _0x101 + 4) {
@@ -480,6 +498,7 @@ static bool test_to_integer_limited(void)
                 (unsigned long long) v, errno, (int) (end - _0x101));
         return false;
     }
+    errno = EAGAIN;
     end = _0x101 + 100;
     v = charstr_to_integer(_0x101, &end, 0);
     if (v != 257 || errno || end != _0x101 + 5) {
@@ -494,7 +513,7 @@ static bool test_to_integer_limited(void)
 static bool test_to_integer_range(void)
 {
     int64_t v;
-    errno = 0;
+    errno = EAGAIN;
     v = charstr_to_integer("-0x8000000000000000", NULL, 0);
     if (v != -0x8000000000000000LL || errno) {
         fprintf(stderr,
@@ -503,6 +522,7 @@ static bool test_to_integer_range(void)
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("+0x7fffffffffffffff", NULL, 0);
     if (v != 0x7fffffffffffffffLL || errno) {
         fprintf(stderr,
@@ -511,6 +531,7 @@ static bool test_to_integer_range(void)
                 (unsigned long long) v, errno);
         return false;
     }
+    errno = EAGAIN;
     v = charstr_to_integer("0x8000000000000000", NULL, 0);
     if (v != -0x8000000000000000LL || errno != ERANGE) {
         fprintf(stderr,
