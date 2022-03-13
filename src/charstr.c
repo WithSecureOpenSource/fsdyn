@@ -1,5 +1,6 @@
 #include "charstr.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -511,6 +512,7 @@ list_t *charstr_split_atoms(const char *s)
 
 list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split)
 {
+    assert(*delim);
     list_t *list = make_list();
     size_t skip = strlen(delim);
     while (max_split--) {

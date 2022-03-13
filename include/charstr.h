@@ -104,12 +104,13 @@ list_t *charstr_split(const char *s, char delim, unsigned max_split);
 unsigned charstr_split_into_array(const char *s, char delim, char **array,
                                   unsigned max_split);
 
-/* Return a fresh list of strings split at any nonempty sequence of
- * CHARSTR_WHITESPACE characters. If the argument only contains
- * whitespace, an empty list is returned. */
+/* Return a fresh list of nonempty strings split at any nonempty
+ * sequence of CHARSTR_WHITESPACE characters. If the argument only
+ * contains whitespace, an empty list is returned. */
 list_t *charstr_split_atoms(const char *s);
 
-/* Like charstr_split(), but the delimiter is a string. */
+/* Like charstr_split(), but the delimiter is a nonempty string. Also,
+ * the returned list may contain empty strings. */
 list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split);
 
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
