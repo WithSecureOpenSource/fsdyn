@@ -1,5 +1,6 @@
 #include "charstr.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -335,6 +336,113 @@ unsigned charstr_digit_value(char c)
     }
 }
 
+static unsigned natural_base(const char **s, const char *end)
+{
+    const char *sp = *s;
+    if (sp == end || *sp != '0')
+        return 10;
+    sp++;
+    if (sp == end || !(*sp == 'x' || *sp == 'X'))
+        return 8;
+    *s = sp + 1;
+    return 16;
+}
+
+static ssize_t to_unsigned(const char *buffer, const char *end, unsigned base,
+                           uint64_t *value, bool *overflow)
+{
+    const char *digits = buffer;
+    if (base == 0)
+        base = natural_base(&digits, end);
+    if (base < 2 || base > 16) {
+        errno = EINVAL;
+        return -1;
+    }
+    *overflow = false;
+    uint64_t n = 0;
+    uint64_t limit = (uint64_t) -1 / base;
+    const char *dp = digits;
+    for (; dp != end; dp++) {
+        unsigned d = charstr_digit_value(*dp);
+        if (d == -1U || d >= base)
+            break;
+        uint64_t old_n = n;
+        n = base * n + d;
+        if (old_n > limit || n < old_n)
+            *overflow = true;
+    }
+    if (dp == digits) {
+        errno = EILSEQ;
+        return -1;
+    }
+    *value = n;
+    return dp - buffer;
+}
+
+ssize_t charstr_to_unsigned(const char *buffer, size_t size, unsigned base,
+                            uint64_t *value)
+{
+    const char *end = buffer + size;
+    bool overflow;
+    ssize_t count = to_unsigned(buffer, end, base, value, &overflow);
+    if (count >= 0 && overflow)
+        errno = ERANGE;
+    return count;
+}
+
+static int64_t parse_positive(const char *s, const char *end, unsigned base,
+                              int64_t *value)
+{
+    uint64_t u;
+    bool overflow;
+    ssize_t count = to_unsigned(s, end, base, &u, &overflow);
+    if (count >= 0) {
+        if (overflow || (int64_t) u < 0)
+            errno = ERANGE;
+        *value = u;
+    }
+    return count;
+}
+
+static int64_t parse_negative(const char *s, const char *end, unsigned base,
+                              int64_t *value)
+{
+    uint64_t u;
+    bool overflow;
+    ssize_t count = to_unsigned(s, end, base, &u, &overflow);
+    if (count >= 0) {
+        if (overflow || (int64_t) -u > 0)
+            errno = ERANGE;
+        *value = -u;
+    }
+    return count;
+}
+
+ssize_t charstr_to_integer(const char *buffer, size_t size, unsigned base,
+                           int64_t *value)
+{
+    if (!size) {
+        errno = EILSEQ;
+        return 0;
+    }
+    const char *end = buffer + size;
+    ssize_t count;
+    switch (*buffer) {
+        case '+':
+            count = parse_positive(buffer + 1, end, base, value);
+            if (count < 0)
+                return count;
+            return count + 1;
+        case '-':
+            count = parse_negative(buffer + 1, end, base, value);
+            if (count < 0)
+                return count;
+            return count + 1;
+        default:
+            return parse_positive(buffer, end, base, value);
+    }
+}
+
 char *charstr_dupstr(const char *s)
 {
     if (!s)
@@ -433,6 +541,7 @@ list_t *charstr_split_atoms(const char *s)
 
 list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split)
 {
+    assert(*delim);
     list_t *list = make_list();
     size_t skip = strlen(delim);
     while (max_split--) {

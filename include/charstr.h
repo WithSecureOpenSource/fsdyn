@@ -62,6 +62,32 @@ char charstr_ucase_char(char c);
 /* The return value is -1U if c is not a hexadecimal digit. */
 unsigned charstr_digit_value(char c);
 
+/* charstr_to_unsigned() and charstr_to_integer() parse a buffer of
+ * characters into a 64-bit unsigned or signed integer. Parsing ends
+ * when the first illegal character (e.g. NUL or punctuation) is
+ * encountered or the end of the buffer is reached. The return value
+ * indicates how many characters were consumed in parsing.
+ *
+ * A negative value is returned and errno is set to EILSEQ if the
+ * representation is syntactically illegal. For example, 3 is returned
+ * for "111}", but a negative number is returned for "}" because no
+ * integer is detected..
+ *
+ * The integer base must be 0 or between 2 and 16. If base is 0,
+ * C-style representation is expected (e.g. "-033" is taken as an
+ * octal number). A sign character ('+' or '-') is allowed only by
+ * charstr_to_integer(). A bad base value results in a negative value
+ * with errno set to EINVAL.
+ *
+ * If the value overflows, a natural (2's-complement) wrapping is
+ * performed. In that case, a positive value is returned and errno is
+ * set to ERANGE. An application wishing to guard for the possibility
+ * should set errno to zero before calling the function. */
+ssize_t charstr_to_unsigned(const char *buffer, size_t size, unsigned base,
+                            uint64_t *value);
+ssize_t charstr_to_integer(const char *buffer, size_t size, unsigned base,
+                           int64_t *value);
+
 /* The returned string is allocated with fsalloc(). */
 char *charstr_dupstr(const char *s);
 char *charstr_dupsubstr(const char *s, const char *end);
@@ -85,12 +111,13 @@ list_t *charstr_split(const char *s, char delim, unsigned max_split);
 unsigned charstr_split_into_array(const char *s, char delim, char **array,
                                   unsigned max_split);
 
-/* Return a fresh list of strings split at any nonempty sequence of
- * CHARSTR_WHITESPACE characters. If the argument only contains
- * whitespace, an empty list is returned. */
+/* Return a fresh list of nonempty strings split at any nonempty
+ * sequence of CHARSTR_WHITESPACE characters. If the argument only
+ * contains whitespace, an empty list is returned. */
 list_t *charstr_split_atoms(const char *s);
 
-/* Like charstr_split(), but the delimiter is a string. */
+/* Like charstr_split(), but the delimiter is a nonempty string. Also,
+ * the returned list may contain empty strings. */
 list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split);
 
 /* Return a copy of s with initial and final CHARSTR_WHITESPACE
