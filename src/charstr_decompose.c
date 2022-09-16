@@ -103,3 +103,44 @@ char *charstr_unicode_decompose(const char *s, const char *end, char output[],
     sort_combining_characters(output, q);
     return q;
 }
+
+char *charstr_unicode_convert_to_nfd(const char *s)
+{
+    if (charstr_unicode_canonically_decomposed(s, NULL)) {
+        errno = 0;
+        return NULL;
+    }
+    char *nfd = fsalloc(3 * strlen(s) + 1);
+    if (!charstr_unicode_decompose(s, NULL, nfd, NULL)) {
+        int err = errno;
+        fsfree(nfd);
+        errno = err;
+        return NULL;
+    }
+    errno = 0;
+    return nfd;
+}
+
+char *charstr_unicode_convert_to_nfc(const char *s)
+{
+    if (charstr_unicode_canonically_composed(s, NULL)) {
+        errno = 0;
+        return NULL;
+    }
+    char *nfd = charstr_unicode_convert_to_nfd(s);
+    if (errno)
+        return NULL;
+    if (nfd)
+        s = nfd;
+    char *nfc = fsalloc(strlen(s) + 1);
+    if (!charstr_unicode_recompose(s, NULL, nfc, NULL)) {
+        int err = errno;
+        fsfree(nfd);
+        fsfree(nfc);
+        errno = err;
+        return NULL;
+    }
+    fsfree(nfd);
+    errno = 0;
+    return nfc;
+}

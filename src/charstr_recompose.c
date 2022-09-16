@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include "charstr.h"
 #include "fsdyn_version.h"

@@ -567,6 +567,32 @@ char *charstr_strip(const char *s)
     return charstr_dupsubstr(s, end);
 }
 
+char *charstr_join(const char *joiner, list_t *strings)
+{
+    list_elem_t *e = list_get_first(strings);
+    if (!e)
+        return charstr_dupstr("");
+    size_t total = (list_size(strings) - 1) * strlen(joiner) + 1;
+    do {
+        total += strlen(list_elem_get_value(e));
+        e = list_next(e);
+    } while (e);
+    char *result = fsalloc(total);
+    char *t = result;
+    e = list_get_first(strings);
+    for (;;) {
+        for (const char *s = list_elem_get_value(e); *s; *t++ = *s++)
+            ;
+        e = list_next(e);
+        if (!e)
+            break;
+        for (const char *s = joiner; *s; *t++ = *s++)
+            ;
+    }
+    *t = '\0';
+    return result;
+}
+
 static bool valid_unicode(int codepoint)
 {
     return (codepoint >= 0 && codepoint <= 0xd7ff) ||
