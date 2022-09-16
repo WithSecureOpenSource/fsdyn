@@ -125,6 +125,11 @@ list_t *charstr_split_str(const char *s, const char *delim, unsigned max_split);
  * fsfree(). If s == NULL, NULL is returned. */
 char *charstr_strip(const char *s);
 
+/* Return a NUL-terminated string that joins the given strings with
+ * the joiner. If strings is empty, an empty string is returned. The
+ * returned string should be freed with fsfree(). */
+char *charstr_join(const char *joiner, list_t *strings);
+
 /* Decode a single UTF-8-encode Unicode codepoint. The encoding begins
  * at s and is limited by end (which is the end of the buffer, not the
  * end of the codepoint encoding). If s is NULL, return NULL. If end is
@@ -276,6 +281,20 @@ char *charstr_unicode_decompose(const char *s, const char *end, char output[],
  * insufficient output buffer space. */
 char *charstr_unicode_recompose(const char *s, const char *end, char output[],
                                 const char *output_end);
+
+/* Return the canonically composed (NFC) UTF-8 string corresponding to
+ * s and set errno to 0. If s is canonically composed, NULL may be
+ * returned instead. In case of a conversion failure, errno is set to
+ * EILSEQ and NULL is returned. The returned string should be freed
+ * with fsfree(). */
+char *charstr_unicode_convert_to_nfc(const char *s);
+
+/* Return the canonically decomposed (NFD) UTF-8 string corresponding
+ * to s and set errno to 0. If s is canonically decomposed, NULL may
+ * be returned instead. In case of a conversion failure, errno is set
+ * to EILSEQ and NULL is returned. The returned string should be freed
+ * with fsfree(). */
+char *charstr_unicode_convert_to_nfd(const char *s);
 
 /* Find and return the next (extended) grapheme break. The encoding
  * begins at s (which should be a grapheme break) and is limited by

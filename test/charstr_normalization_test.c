@@ -64,15 +64,45 @@ static bool verify_normalization(const char *str, const char *nfd_str,
     return true;
 }
 
+static bool verify_normalization_2(const char *str, const char *nfd_str,
+                                   const char *nfc_str)
+{
+    char *nfd_output = charstr_unicode_convert_to_nfd(str);
+    if (errno || strcmp(nfd_str, nfd_output ?: str)) {
+        fprintf(stderr, "Error: toNFD_2: %s\n", strerror(errno));
+        fprintf(stderr, "Input: ");
+        dump_string(str);
+        fsfree(nfd_output);
+        return false;
+    }
+    fsfree(nfd_output);
+    char *nfc_output = charstr_unicode_convert_to_nfc(str);
+    if (errno || strcmp(nfc_str, nfc_output ?: str)) {
+        fprintf(stderr, "Error: toNFC_2: %s\n", strerror(errno));
+        fprintf(stderr, "Input: ");
+        dump_string(str);
+        fsfree(nfc_output);
+        return false;
+    }
+    fsfree(nfc_output);
+    return true;
+}
+
 static bool test_normalization(char **strv)
 {
     int i;
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++) {
         if (!verify_normalization(strv[i], strv[2], strv[1]))
             return false;
-    for (; i < 5; i++)
+        if (!verify_normalization_2(strv[i], strv[2], strv[1]))
+            return false;
+    }
+    for (; i < 5; i++) {
         if (!verify_normalization(strv[i], strv[4], strv[3]))
             return false;
+        if (!verify_normalization_2(strv[i], strv[4], strv[3]))
+            return false;
+    }
     return true;
 }
 
