@@ -44,7 +44,8 @@ env.StaticLibrary('fsdyn',
                     "unicode_emoji_table.c" ])
 
 env.Install("host",
-            [ "charstr.c",
+            [ "bytearray.c",
+              "charstr.c",
               "intset.c",
               "list.c",
               "fsalloc.c",
@@ -54,6 +55,7 @@ host_env.Program("gen_idna_table",
                  [ "gen_idna_table.c",
                    "host/charstr.c",
                    "host/list.c",
+                   "host/bytearray.c",
                    "host/fsalloc.c",
                    'host/fsdyn_version.c' ])
 
@@ -67,6 +69,7 @@ host_env.Program("gen_grapheme_break_property",
                    "host/charstr.c",
                    "host/intset.c",
                    "host/list.c",
+                   "host/bytearray.c",
                    "host/fsalloc.c",
                    'host/fsdyn_version.c' ])
 
@@ -80,6 +83,7 @@ host_env.Program("gen_emoji_property",
                    "host/charstr.c",
                    "host/intset.c",
                    "host/list.c",
+                   "host/bytearray.c",
                    "host/fsalloc.c",
                    'host/fsdyn_version.c' ])
 

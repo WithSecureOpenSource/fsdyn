@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bytearray.h"
 #include "fsalloc.h"
 #include "fsdyn_version.h"
 
@@ -570,26 +571,16 @@ char *charstr_strip(const char *s)
 char *charstr_join(const char *joiner, list_t *strings)
 {
     list_elem_t *e = list_get_first(strings);
-    if (!e)
-        return charstr_dupstr("");
-    size_t total = (list_size(strings) - 1) * strlen(joiner) + 1;
-    do {
-        total += strlen(list_elem_get_value(e));
-        e = list_next(e);
-    } while (e);
-    char *result = fsalloc(total);
-    char *t = result;
-    e = list_get_first(strings);
-    for (;;) {
-        for (const char *s = list_elem_get_value(e); *s; *t++ = *s++)
-            ;
-        e = list_next(e);
-        if (!e)
-            break;
-        for (const char *s = joiner; *s; *t++ = *s++)
-            ;
+    byte_array_t *array = make_byte_array(SIZE_MAX);
+    if (e) {
+        byte_array_append_string(array, list_elem_get_value(e));
+        for (e = list_next(e); e; e = list_next(e)) {
+            byte_array_append_string(array, joiner);
+            byte_array_append_string(array, list_elem_get_value(e));
+        }
     }
-    *t = '\0';
+    char *result = charstr_dupstr(byte_array_data(array));
+    destroy_byte_array(array);
     return result;
 }
 
