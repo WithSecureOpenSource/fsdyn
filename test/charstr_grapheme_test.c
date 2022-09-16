@@ -88,18 +88,21 @@ int main(int argc, const char *const *argv)
     FILE *f = fopen(argv[1], "r");
     char *line = NULL;
     size_t length = 0;
-    bool ok = true;
-    for (int ln = 1; ok && getline(&line, &length, f) > 0; ln++) {
+    for (int ln = 1; getline(&line, &length, f) > 0; ln++) {
         list_t *parts = charstr_split(line, '#', 1);
         const char *body = list_elem_get_value(list_get_first(parts));
-        ok = test(body);
+        if (!test(body)) {
+            fprintf(stderr, "Failure, line %d:\n", ln);
+            fprintf(stderr, "%s\n", line);
+            free(line);
+            fclose(f);
+            return EXIT_FAILURE;
+        }
         list_foreach(parts, (void *) fsfree, NULL);
         destroy_list(parts);
     }
     free(line);
     fclose(f);
-    if (!ok)
-        return EXIT_FAILURE;
     fprintf(stderr, "Ok\n");
     return EXIT_SUCCESS;
 }
