@@ -72,7 +72,7 @@ host_env.Program("gen_grapheme_break_property",
 
 env.Command("unicode_grapheme_break_table.c",
             [ "gen_grapheme_break_property",
-              "#unicode/GraphemeBreakProperty.txt" ],
+              "#unicode/auxiliary/GraphemeBreakProperty.txt" ],
             """$SOURCES >$TARGET""")
 
 host_env.Program("gen_emoji_property",
