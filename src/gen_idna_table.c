@@ -97,10 +97,8 @@ static void generate_mappings()
         if (table[cp].mapping && *table[cp].mapping) {
             const char *s_cp = charstr_printf("    { %d,", cp);
             list_t *bytes = make_list();
-            size_t bytes_length = 0;
             for (const char *p = table[cp].mapping; *p; p++) {
                 const char *s_b = charstr_printf("\\%o", *p & 0xff);
-                bytes_length += strlen(s_b);
                 list_append(bytes, s_b);
             }
             printf("%s", s_cp);
