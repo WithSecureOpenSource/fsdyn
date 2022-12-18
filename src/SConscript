@@ -97,8 +97,16 @@ env.Command("unicode_categories.c",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
+host_env.Program("gen_lower_case_table",
+                 [ "gen_lower_case_table.c",
+                   "host/charstr.c",
+                   "host/list.c",
+                   "host/bytearray.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
+
 env.Command("unicode_lower_case.c",
-            [ "lower_case.py",
+            [ "gen_lower_case_table",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
