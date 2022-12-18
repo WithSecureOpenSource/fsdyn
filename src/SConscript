@@ -141,8 +141,16 @@ env.Command("unicode_allowed_in_normal_form.c",
               "#unicode/DerivedNormalizationProps.txt" ],
             """$SOURCES >$TARGET""")
 
+host_env.Program("gen_decomposition_table",
+                 [ "gen_decomposition_table.c",
+                   "host/charstr.c",
+                   "host/list.c",
+                   "host/bytearray.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
+
 env.Command("unicode_decomposition.c",
-            [ "decomposition.py",
+            [ "gen_decomposition_table",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
