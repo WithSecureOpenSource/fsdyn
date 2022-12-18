@@ -107,8 +107,16 @@ env.Command("unicode_upper_case.c",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
+host_env.Program("gen_canonical_combining_classes_table",
+                 [ "gen_canonical_combining_classes_table.c",
+                   "host/charstr.c",
+                   "host/list.c",
+                   "host/bytearray.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
+
 env.Command("unicode_canonical_combining_classes.c",
-            [ "canonical_combining_classes.py",
+            [ "gen_canonical_combining_classes_table",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
