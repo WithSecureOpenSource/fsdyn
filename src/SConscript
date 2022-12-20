@@ -44,8 +44,10 @@ env.StaticLibrary('fsdyn',
                     "unicode_emoji_table.c" ])
 
 env.Install("host",
-            [ "bytearray.c",
+            [ "avltree.c",
+              "bytearray.c",
               "charstr.c",
+              "integer.c",
               "intset.c",
               "list.c",
               "fsalloc.c",
@@ -154,8 +156,19 @@ env.Command("unicode_decomposition.c",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
+host_env.Program("gen_recomposition_table",
+                 [ "gen_recomposition_table.c",
+                   "host/avltree.c",
+                   "host/charstr.c",
+                   "host/integer.c",
+                   "host/intset.c",
+                   "host/list.c",
+                   "host/bytearray.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
+
 env.Command("unicode_recomposition.c",
-            [ "recomposition.py",
+            [ "gen_recomposition_table",
               "#unicode/UnicodeData.txt",
               "#unicode/CompositionExclusions.txt" ],
             """$SOURCES >$TARGET""")
