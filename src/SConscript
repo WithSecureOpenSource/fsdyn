@@ -138,8 +138,17 @@ env.Command("unicode_canonical_combining_classes.c",
               "#unicode/UnicodeData.txt" ],
             """$SOURCES >$TARGET""")
 
+host_env.Program("gen_allowed_in_normal_form_table",
+                 [ "gen_allowed_in_normal_form_table.c",
+                   "host/charstr.c",
+                   "host/intset.c",
+                   "host/list.c",
+                   "host/bytearray.c",
+                   "host/fsalloc.c",
+                   'host/fsdyn_version.c' ])
+
 env.Command("unicode_allowed_in_normal_form.c",
-            [ "allowed_in_normal_form.py",
+            [ "gen_allowed_in_normal_form_table",
               "#unicode/DerivedNormalizationProps.txt" ],
             """$SOURCES >$TARGET""")
 
