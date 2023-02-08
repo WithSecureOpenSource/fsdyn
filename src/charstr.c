@@ -584,10 +584,10 @@ char *charstr_join(const char *joiner, list_t *strings)
     return result;
 }
 
-static bool valid_unicode(int codepoint)
+static bool valid_unicode(int codepoint, int lowest)
 {
-    return (codepoint >= 0 && codepoint <= 0xd7ff) ||
-        (codepoint >= 0xe000 && codepoint <= 0x10ffff);
+    return codepoint >= lowest &&
+        (codepoint <= 0xd7ff || (codepoint >= 0xe000 && codepoint <= 0x10ffff));
 }
 
 const char *charstr_decode_utf8_codepoint(const char *s, const char *end,
@@ -601,15 +601,19 @@ const char *charstr_decode_utf8_codepoint(const char *s, const char *end,
     else if (!(*s & 0x40))
         return NULL;
     else {
-        if (!(*s & 0x20))
+        int lowest;
+        if (!(*s & 0x20)) {
             cp = *s++ & 0x1f;
-        else {
-            if (!(*s & 0x10))
+            lowest = 0x80;
+        } else {
+            if (!(*s & 0x10)) {
                 cp = *s++ & 0x0f;
-            else {
+                lowest = 0x400;
+            } else {
                 if (*s & 0x08)
                     return NULL;
                 cp = *s++ & 0x07;
+                lowest = 0x10000;
                 if (s == end || (*s & 0xc0) != 0x80)
                     return NULL;
                 cp = cp << 6 | *s++ & 0x3f;
@@ -621,7 +625,7 @@ const char *charstr_decode_utf8_codepoint(const char *s, const char *end,
         if (s == end || (*s & 0xc0) != 0x80)
             return NULL;
         cp = cp << 6 | *s++ & 0x3f;
-        if (!valid_unicode(cp))
+        if (!valid_unicode(cp, lowest))
             return NULL;
     }
     if (codepoint)
