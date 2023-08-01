@@ -6,13 +6,11 @@
 
 static void *naive_realloc(void *ptr, size_t size)
 {
-#ifndef __linux__
     if (size == 0) {
         if (ptr != NULL)
             free(ptr);
         return NULL;
     }
-#endif
     void *obj = realloc(ptr, size);
     if (obj == NULL && size != 0)
         abort();
