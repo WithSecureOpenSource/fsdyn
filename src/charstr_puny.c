@@ -62,9 +62,9 @@ static const char *punycode_encode_pass1(const char *p, const char *end,
     if (end[-1] == '-')
         return fail("label ends with hyphen");
     bool first = true;
-    size_t n, h = 0;
+    size_t h = 0;
     *nonascii_count = 0;
-    for (n = 0; p != end && *p != '.'; n++) {
+    while (p != end && *p != '.') {
         int codepoint;
         p = charstr_decode_utf8_codepoint(p, end, &codepoint);
         if (!p)
