@@ -69,9 +69,9 @@ size_t base64_encode_buffer(const void *source, size_t source_size, char *dest,
     const uint8_t *q = source;
     const uint8_t *tail = q + source_size - source_size % 3;
     uint32_t bits;
-    if (pos62 == -1)
+    if (pos62 == BASE64_DEFAULT_CHAR)
         pos62 = '+';
-    if (pos63 == -1)
+    if (pos63 == BASE64_DEFAULT_CHAR)
         pos63 = '/';
     size_t dest_body_counter = dest_size / 4;
     while (dest_body_counter-- && q < tail) {
@@ -119,8 +119,8 @@ char *base64_encode_simple(const void *buffer, size_t size)
     if (encoding_size == -1)
         return NULL;
     char *result = fsalloc(encoding_size + 1);
-    (void) base64_encode_buffer(buffer, size, result, encoding_size + 1, -1,
-                                -1);
+    (void) base64_encode_buffer(buffer, size, result, encoding_size + 1,
+                                BASE64_DEFAULT_CHAR, BASE64_DEFAULT_CHAR);
     return result;
 }
 
@@ -190,9 +190,9 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size, void *dest,
     size_t pi = 0;
     unsigned bits = 0;
     unsigned bit_count = 0;
-    if (pos62 == -1)
+    if (pos62 == BASE64_DEFAULT_CHAR)
         pos62 = '+';
-    if (pos63 == -1)
+    if (pos63 == BASE64_DEFAULT_CHAR)
         pos63 = '/';
     while (pi < dest_size && si < source_size && source[si] &&
            source[si] != '=') {
@@ -240,11 +240,13 @@ ssize_t base64_decode_buffer(const char *source, size_t source_size, void *dest,
 
 void *base64_decode_simple(const char *encoding, size_t *binary_size)
 {
-    ssize_t count = base64_decode_buffer(encoding, -1, NULL, 0, -1, -1, true);
+    ssize_t count = base64_decode_buffer(encoding, -1, NULL, 0,
+                                         BASE64_DEFAULT_CHAR, BASE64_DEFAULT_CHAR, true);
     if (count < 0)
         return NULL;
     uint8_t *result = fsalloc(count + 1);
-    (void) base64_decode_buffer(encoding, -1, result, count, -1, -1, true);
+    (void) base64_decode_buffer(encoding, -1, result, count,
+                                BASE64_DEFAULT_CHAR, BASE64_DEFAULT_CHAR, true);
     result[count] = '\0';
     *binary_size = count;
     return result;
