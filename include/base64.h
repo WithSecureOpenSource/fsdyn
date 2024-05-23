@@ -15,7 +15,8 @@ extern "C" {
  * long as dest_size > 0. Returns the number of characters that would
  * be written, given a large enough buffer.
  *
- * If pos62 and/or pos63 is -1, the defaults '+' and '/' are used.
+ * If pos62 and/or pos63 is BASE64_DEFAULT_CHAR, the defaults '+' and
+ * '/' are used.
  *
  * This function cannot fail. */
 size_t base64_encode_buffer(const void *source, size_t source_size, char *dest,
@@ -37,7 +38,8 @@ char *base64_encode_simple(const void *buffer, size_t size);
  * encountered. Specify -1 as source_size to only consider
  * NUL-termination.
  *
- * If pos62 and/or pos63 is -1, the defaults '+' and '/' are used.
+ * If pos62 and/or pos63 is BASE64_DEFAULT_CHAR, the defaults '+' and
+ * '/' are used.
  *
  * A negative return value indicates an error. Errno is set as follows:
  *
@@ -72,6 +74,12 @@ enum {
     BASE64_ILLEGAL_WHITESPACE = -2, /* ' \t\n\f\r' */
     BASE64_ILLEGAL_TRAILER = -3,    /* '=' */
     BASE64_ILLEGAL_NUL = -4
+};
+
+/* Sentinel value to be used with base64_encode_buffer and
+ * base64_decode_buffer. */
+enum {
+    BASE64_DEFAULT_CHAR = (char) -1
 };
 
 #ifdef __cplusplus
