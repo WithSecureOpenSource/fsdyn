@@ -608,7 +608,7 @@ const char *charstr_decode_utf8_codepoint(const char *s, const char *end,
         } else {
             if (!(*s & 0x10)) {
                 cp = *s++ & 0x0f;
-                lowest = 0x400;
+                lowest = 0x800;
             } else {
                 if (*s & 0x08)
                     return NULL;
