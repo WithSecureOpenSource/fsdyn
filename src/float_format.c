@@ -765,10 +765,14 @@ static size_t format_normal(const binary64_float_t *dec, char buffer[])
         }
     } else {
         /* Scientific notation */
-        emit_integer(p + 1, dec->significand, significand_magnitude);
-        p[0] = p[1];
-        *++p = '.';
-        p += significand_magnitude;
+        if (significand_magnitude == 1)
+            emit_1_digit(p++, dec->significand);
+        else {
+            emit_integer(p + 1, dec->significand, significand_magnitude);
+            p[0] = p[1];
+            *++p = '.';
+            p += significand_magnitude;
+        }
         *p++ = 'e';
         int exp = dec->exponent + significand_magnitude - 1;
         if (exp >= 0) {
