@@ -36,7 +36,9 @@ enum {
  * concise, NUL-terminated decimal representation that converts back
  * to the original value. The chosen format aims to be suitable for
  * human use in that exponential notation is used only for "very big"
- * or "very small" values.
+ * or "very small" values. Apart from NaNs and infinities, the result
+ * is a valid JSON number (RFC 8259); in particular, a decimal point
+ * is always followed by a digit ("1e+20", not "1.e+20").
  *
  * Special values are formatted to "-0.0", "nan", "-nan", "infinity"
  * and "-infinity".

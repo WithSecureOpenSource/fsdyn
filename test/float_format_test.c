@@ -17,6 +17,12 @@ static const char *number[] = { "0",
                                 "2333444712",
                                 "3.33444712e-07",
                                 "3.33444712e+10",
+                                "1e-07",
+                                "1e+20",
+                                "3e+100",
+                                "5e-324",
+                                "-1e+20",
+                                "1.5e-07",
                                 "0.1",
                                 "0.123",
                                 "0.00000123",
@@ -32,6 +38,52 @@ static const char *number[] = { "0",
                                 "-infinity",
                                 "-0.0",
                                 NULL };
+
+static const char *skip_digits(const char *p)
+{
+    while (*p >= '0' && *p <= '9')
+        p++;
+    return p;
+}
+
+/* Check the number syntax of RFC 8259 section 6. */
+static bool is_json_number(const char *repr)
+{
+    const char *p = repr;
+    if (*p == '-')
+        p++;
+    if (*p == '0')
+        p++;
+    else if (*p >= '1' && *p <= '9')
+        p = skip_digits(p);
+    else
+        return false;
+    if (*p == '.') {
+        const char *fraction = ++p;
+        p = skip_digits(p);
+        if (p == fraction)
+            return false;
+    }
+    if (*p == 'e' || *p == 'E') {
+        p++;
+        if (*p == '+' || *p == '-')
+            p++;
+        const char *exponent = p;
+        p = skip_digits(p);
+        if (p == exponent)
+            return false;
+    }
+    return !*p;
+}
+
+static bool test_json_syntax(const char *repr, double value)
+{
+    if (isfinite(value) && !is_json_number(repr)) {
+        fprintf(stderr, "Not a JSON number: %.21g --> \"%s\"\n", value, repr);
+        return false;
+    }
+    return true;
+}
 
 static bool test_parse(const char *number, double value, const char *end)
 {
@@ -85,7 +137,7 @@ static bool test_format(const char *number, double value)
                 (int) length);
         return false;
     }
-    return true;
+    return test_json_syntax(repr, value);
 }
 
 static bool test_num(const char *number)
@@ -124,6 +176,10 @@ static bool test_random_formatting()
         if (strlen(repr) != length) {
             fprintf(stderr, "Formatting failure: |\"%s\"| --> %d\n", repr,
                     (int) length);
+            return false;
+        }
+        if (!test_json_syntax(repr, v.value)) {
+            close(fd);
             return false;
         }
     }
